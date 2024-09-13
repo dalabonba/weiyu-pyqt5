@@ -1,23 +1,23 @@
-# singledepthview.py
+
 from PyQt5.QtWidgets import QGroupBox, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton, QSlider
 from PyQt5.QtCore import Qt
 from .baseview import BaseView  
 
-class AimodelView(BaseView):
+class OcclusionView(BaseView):
     def __init__(self, parent_layout, model, renderinput):
-        super().__init__(parent_layout, renderinput) 
+        super().__init__(parent_layout, renderinput)
         self.model = model
 
     def create_depth(self,parent_layout,current_panel):
         if current_panel:
             parent_layout.removeWidget(current_panel)
 
-        panel = QGroupBox("AI預測")
+        panel = QGroupBox("批次創建上下顎咬合圖")
         layout = QVBoxLayout()
 
         # 上顎模型檔案選擇
         upper_layout = QHBoxLayout()
-        upper_layout.addWidget(QLabel("預測模型:"))
+        upper_layout.addWidget(QLabel("上顎圖檔:"))
         self.upper_file = QLineEdit()
         upper_layout.addWidget(self.upper_file)
         upper_button = QPushButton("選擇")
@@ -27,7 +27,7 @@ class AimodelView(BaseView):
 
         # 下顎模型檔案選擇
         lower_layout = QHBoxLayout()
-        lower_layout.addWidget(QLabel("缺陷圖檔:"))
+        lower_layout.addWidget(QLabel("下顎圖檔:"))
         self.lower_file = QLineEdit()
         lower_layout.addWidget(self.lower_file)
         lower_button = QPushButton("選擇")
@@ -38,7 +38,7 @@ class AimodelView(BaseView):
 
         # 輸出深度圖文件夾選擇
         output_layout = QHBoxLayout()
-        output_layout.addWidget(QLabel("輸出圖檔:"))
+        output_layout.addWidget(QLabel("輸出文件夾:"))
         self.output_folder = QLineEdit()
         output_layout.addWidget(self.output_folder)
         output_button = QPushButton("選擇")
@@ -47,7 +47,7 @@ class AimodelView(BaseView):
         layout.addLayout(output_layout)
 
         # 保存按鈕
-        save_button = QPushButton("AI預測")
+        save_button = QPushButton("保存咬合圖")
         save_button.clicked.connect(self.save_function_file)  # 使用 BaseView 的 save_depth_map
         layout.addWidget(save_button)
 

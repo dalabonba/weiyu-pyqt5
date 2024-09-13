@@ -3,7 +3,9 @@ from PyQt5.QtWidgets import (QMainWindow, QVBoxLayout, QHBoxLayout, QPushButton,
 from PyQt5.QtCore import Qt
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 import vtkmodules.all as vtk
-from .singledepthview import SingleDepthView 
+from . import singledepthview, mutipledepthview,mutipledepthview,aipredictview,edgeview,remeshview,occlusionview
+from Model import Singledepthmodel,Mutipledepthmodel
+
 
 class View(QMainWindow):
     def __init__(self, parent=None):
@@ -32,6 +34,7 @@ class View(QMainWindow):
             "depthButton": "單次創建深度圖",
             "mutiple_depthButton": "多次創建深度圖",
             "edgeButton": "獲得牙齒邊界線圖",
+            "occlusionButton": "獲得咬合重疊處",
             "predictButton": "AI預測",
             "reconstructButton": "3D模型重建"
         }
@@ -62,6 +65,7 @@ class View(QMainWindow):
         self.iren1 = self.vtkWidget1.GetRenderWindow().GetInteractor()
         self.vtk_renderer1.SetBackground(0.1, 0.2, 0.4)
         self.iren1.Initialize()
+        self.vtk_renderer1.GetRenderWindow().SetSize(256, 256)
 
         self.vtk_renderer2 = vtk.vtkRenderer()
         self.vtkWidget2.GetRenderWindow().SetSharedRenderWindow(self.vtkWidget1.GetRenderWindow())
@@ -69,37 +73,57 @@ class View(QMainWindow):
         self.iren2 = self.vtkWidget2.GetRenderWindow().GetInteractor()
         self.vtk_renderer2.SetBackground(0.1, 0.4, 0.2)
         self.iren2.Initialize()
+        self.vtk_renderer2.GetRenderWindow().SetSize(256, 256)
+
 
     def connect_signals(self):
         self.depthButton.clicked.connect(lambda: self.create_depth_panel())
         self.mutiple_depthButton.clicked.connect(lambda: self.create_multiple_depth_panel())
         self.edgeButton.clicked.connect(lambda: self.create_edge_panel())
+        self.occlusionButton.clicked.connect(lambda: self.create_occlusion_panel())
         self.predictButton.clicked.connect(lambda: self.create_predict_panel())
         self.reconstructButton.clicked.connect(lambda: self.create_reconstruct_panel())
 
 
 
     def create_depth_panel(self):
-       self.function_view = SingleDepthView(self.buttonPanel)
-       self.current_panel = self.function_view.create_depth_panel(self.buttonPanel,self.current_panel)
+        self.clear_renderers()    
+        self.function_view = singledepthview.SingleDepthView(self.buttonPanel,Singledepthmodel.SingleDepthModel(),self.vtk_renderer1)
+        self.current_panel = self.function_view.create_depth(self.buttonPanel,self.current_panel)
 
     def create_multiple_depth_panel(self):
-        # Similar to create_depth_panel, but for multiple depth maps
-        pass
+        self.clear_renderers()    
+        self.function_view = mutipledepthview.MutipleDepthView(self.buttonPanel,Mutipledepthmodel.BatchDepthModel(),self.vtk_renderer1)
+        self.current_panel = self.function_view.create_depth(self.buttonPanel,self.current_panel)
 
     def create_edge_panel(self):
-        # Create panel for edge detection
-        pass
+        self.clear_renderers()    
+        self.function_view = edgeview.ImageedgeView(self.buttonPanel,Mutipledepthmodel.BatchDepthModel(),self.vtk_renderer1)
+        self.current_panel = self.function_view.create_depth(self.buttonPanel,self.current_panel)
+
+    def create_occlusion_panel(self):
+        self.clear_renderers()    
+        self.function_view = occlusionview.OcclusionView(self.buttonPanel,Mutipledepthmodel.BatchDepthModel(),self.vtk_renderer1)
+        self.current_panel = self.function_view.create_depth(self.buttonPanel,self.current_panel)
 
     def create_predict_panel(self):
         # Create panel for AI prediction
-        pass
+        self.clear_renderers()    
+        self.function_view = aipredictview.AimodelView(self.buttonPanel,Mutipledepthmodel.BatchDepthModel(),self.vtk_renderer1)
+        self.current_panel = self.function_view.create_depth(self.buttonPanel,self.current_panel)
 
     def create_reconstruct_panel(self):
-        # Create panel for 3D model reconstruction
-        pass
+        self.clear_renderers()    
+        self.function_view = remeshview.RemeshView(self.buttonPanel,Mutipledepthmodel.BatchDepthModel(),self.vtk_renderer1)
+        self.current_panel = self.function_view.create_depth(self.buttonPanel,self.current_panel)
 
 
+    def clear_renderers(self):
+        self.vtk_renderer1.RemoveAllViewProps()  # Remove all actors and props from renderer1
+        self.vtk_renderer2.RemoveAllViewProps()  # Remove all actors and props from renderer2
+        
+        self.vtk_renderer1.Render()  # Update the renderer1 to reflect the changes
+        self.vtk_renderer2.Render()  # Update the renderer2 to reflect the changes
 
     def closeEvent(self, event):
         self.cleanup()
