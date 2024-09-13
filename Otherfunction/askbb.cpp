@@ -155,7 +155,7 @@
 //
 //							vtkCamera* cam1 = renderer->GetActiveCamera();
 //
-//							double camPosition[3], TransformMatrix[3];
+//							double camPosition[3];
 //							//近遠裁減平面數值紀錄
 //							double clip[2] = { 0 };
 //							

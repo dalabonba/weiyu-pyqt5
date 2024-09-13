@@ -89,10 +89,24 @@ class SingleDepthModel(QObject):
 
 
 
-    def save_depth_map(self):
-        if not self.output_folder:
+    def save_depth_map(self,renderer):
+        renderer.GetRenderWindow().SetSize(256, 256)
+        if self.lower_actor and  self.output_folder:
+            lower_bound = self.lower_actor.GetBounds()
+            upper_file_cleaned = self.upper_file.strip("' ").strip()
+            # Extract the file name without the extension from self.upper_file
+            base_name = os.path.splitext(os.path.basename(upper_file_cleaned))[0]
+            
+            # Create the output file path
+            output_file_path = self.output_folder+'/'+base_name+".png"
+            if self.angle == 0 and (self.upper_opacity == 0 or self.lower_opacity == 0):
+                scale_filter=readmodel.setup_camera(renderer,renderer.GetRenderWindow()
+                                    ,self.lower_center,self.upper_center,lower_bound[4],lower_bound[5]
+                                    ,lower_bound[2],lower_bound[3],self.upper_opacity)
+                readmodel.save_depth_image(output_file_path,scale_filter)
+                renderer.GetRenderWindow().SetSize(768, 768)
+        else:
             print("Output folder not set")
-            return False
         print(f"Saving depth map to {self.output_folder}")
         # In a real implementation, this method would actually save the depth map
         return True

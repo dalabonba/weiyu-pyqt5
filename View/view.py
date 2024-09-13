@@ -60,20 +60,26 @@ class View(QMainWindow):
         self.mainLayout.addWidget(self.vtkWidget2, 4)
 
     def setup_vtk(self):
+        # Setup for vtkWidget1
         self.vtk_renderer1 = vtk.vtkRenderer()
         self.vtkWidget1.GetRenderWindow().AddRenderer(self.vtk_renderer1)
         self.iren1 = self.vtkWidget1.GetRenderWindow().GetInteractor()
         self.vtk_renderer1.SetBackground(0.1, 0.2, 0.4)
+        
+        # Set the size of the widget to 256x256
+        self.vtkWidget1.setFixedSize(768, 768)
         self.iren1.Initialize()
-        self.vtk_renderer1.GetRenderWindow().SetSize(256, 256)
 
+        # Setup for vtkWidget2
         self.vtk_renderer2 = vtk.vtkRenderer()
         self.vtkWidget2.GetRenderWindow().SetSharedRenderWindow(self.vtkWidget1.GetRenderWindow())
         self.vtkWidget2.GetRenderWindow().AddRenderer(self.vtk_renderer2)
         self.iren2 = self.vtkWidget2.GetRenderWindow().GetInteractor()
         self.vtk_renderer2.SetBackground(0.1, 0.4, 0.2)
+
+        # Set the size of the widget to 256x256
+        self.vtkWidget2.setFixedSize(768, 768)
         self.iren2.Initialize()
-        self.vtk_renderer2.GetRenderWindow().SetSize(256, 256)
 
 
     def connect_signals(self):

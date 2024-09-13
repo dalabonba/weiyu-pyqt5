@@ -95,8 +95,10 @@ class SingleDepthView(BaseView):
                 self.render_input.RemoveActor(self.model.upper_actor)
                 self.render_input.ResetCamera()
                 self.render_input.GetRenderWindow().Render()
-            self.model.upper_actor = None
             self.model.upper_file = ""
+            self.model.upper_center = None
+            self.model.models_center = None
+
 
     def choose_lower_file(self):
         file_path = self.choose_file(self.lower_file)
@@ -107,8 +109,11 @@ class SingleDepthView(BaseView):
                 self.render_input.RemoveActor(self.model.lower_actor)
                 self.render_input.ResetCamera()
                 self.render_input.GetRenderWindow().Render()
-            self.model.lower_actor = None
             self.model.lower_file = ""
+            self.model.lower_center = None
+            self.model.models_center = None
+
+
 
 
     def choose_output_folder(self):
@@ -126,7 +131,7 @@ class SingleDepthView(BaseView):
 
 
     def save_depth_map(self):
-        if self.model.save_depth_map():
+        if self.model.save_depth_map(self.render_input):
             print("Depth map saved successfully")
         else:
             print("Failed to save depth map")
