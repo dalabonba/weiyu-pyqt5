@@ -5,8 +5,8 @@ from .baseview import BaseView
 from PyQt5.QtCore import pyqtSlot
 
 class SingleDepthView(BaseView):
-    def __init__(self, parent_layout, model,renderinput):
-        super().__init__(parent_layout,renderinput)  
+    def __init__(self, parent_layout, model,renderinput,renderinput2):
+        super().__init__(parent_layout,renderinput,renderinput2)  
         self.model = model
         model.model_updated.connect(self.update_view)
 
@@ -68,14 +68,9 @@ class SingleDepthView(BaseView):
         layout.addLayout(lower_opacity_layout)
 
         # 輸出深度圖文件夾選擇
-        output_layout = QHBoxLayout()
-        output_layout.addWidget(QLabel("輸出文件夾:"))
+        self.output_layout = QHBoxLayout()
         self.output_folder = QLineEdit()
-        output_layout.addWidget(self.output_folder)
-        output_button = QPushButton("選擇")
-        output_button.clicked.connect(self.choose_output_folder)
-        output_layout.addWidget(output_button)
-        layout.addLayout(output_layout)
+        self.create_file_selection_layout(layout, "輸出文件夾:", self.output_folder,self.model.set_output_folder)
 
         # 保存按鈕
         save_button = QPushButton("保存深度圖")
@@ -91,7 +86,7 @@ class SingleDepthView(BaseView):
         if file_path and self.model.set_upper_file(file_path):
             self.model.render_model(self.render_input,'up')
         else:
-            if self.model.upper_actor:
+            if hasattr(self.model, 'upper_actor') and self.model.upper_actor:
                 self.render_input.RemoveActor(self.model.upper_actor)
                 self.render_input.ResetCamera()
                 self.render_input.GetRenderWindow().Render()
@@ -105,7 +100,7 @@ class SingleDepthView(BaseView):
         if file_path and self.model.set_lower_file(file_path):
             self.model.render_model(self.render_input,'down')
         else:
-            if self.model.lower_actor:
+            if hasattr(self.model, 'lower_actor') and self.model.lower_actor:
                 self.render_input.RemoveActor(self.model.lower_actor)
                 self.render_input.ResetCamera()
                 self.render_input.GetRenderWindow().Render()
@@ -114,12 +109,6 @@ class SingleDepthView(BaseView):
             self.model.models_center = None
 
 
-
-
-    def choose_output_folder(self):
-        folder_path = self.choose_folder(self.output_folder)
-        if folder_path:
-            self.model.set_output_folder(folder_path)
 
     def update_upper_opacity(self):
         opacity = self.upper_opacity.value() 
@@ -130,19 +119,24 @@ class SingleDepthView(BaseView):
         self.model.set_lower_opacity(opacity)
 
 
-    def save_depth_map(self):
-        if self.model.save_depth_map(self.render_input):
-            print("Depth map saved successfully")
-        else:
-            print("Failed to save depth map")
+
 
     def update_view(self):
-        # Update the view based on the model's current state
         self.upper_file.setText(self.model.upper_file)
         self.lower_file.setText(self.model.lower_file)
         self.angle_input.setText(str(self.model.angle))
         self.output_folder.setText(self.model.output_folder)
         self.upper_opacity.setValue(int(self.model.upper_opacity ))
         self.lower_opacity.setValue(int(self.model.lower_opacity ))
+        self.render_input.RemoveAllViewProps()  # Clear all actors
+        if self.model.upper_file:
+            self.model.render_model(self.render_input, 'up')
+        if self.model.lower_file:
+            self.model.render_model(self.render_input, 'down')
+        # 手動重置相機的位置、焦點等參數
+        camera = self.render_input.GetActiveCamera()
+        camera.SetPosition(0, 0, 1)   # 設置相機到初始位置
+        camera.SetFocalPoint(0, 0, 0)  # 設置焦點到場景中心
+        camera.SetViewUp(0, 1, 0)     # 設置相機的"上"方向
         self.render_input.ResetCamera()
         self.render_input.GetRenderWindow().Render()

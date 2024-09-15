@@ -4,8 +4,8 @@ from PyQt5.QtCore import Qt
 from .baseview import BaseView  
 
 class OcclusionView(BaseView):
-    def __init__(self, parent_layout, model, renderinput):
-        super().__init__(parent_layout, renderinput)
+    def __init__(self, parent_layout, model, renderinput,renderinput2):
+        super().__init__(parent_layout, renderinput,renderinput2)
         self.model = model
 
     def create_depth(self,parent_layout,current_panel):

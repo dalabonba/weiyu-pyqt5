@@ -1,6 +1,7 @@
 import vtk
 import os
 import math
+
 def load_3d_model(filename):
     _, extension = os.path.splitext(filename)
     extension = extension.lower()
@@ -50,7 +51,7 @@ def twomodel_bound(upper_bounds,lower_bounds):
 def rotate_actor(actor, center, angle):
     transform = vtk.vtkTransform()
     transform.Translate(-center[0], -center[1], -center[2])
-    transform.RotateY(angle)  # 绕Y轴旋转
+    transform.RotateY(angle) 
     transform.RotateX(0) 
     transform.RotateZ(0) 
 
@@ -59,7 +60,7 @@ def rotate_actor(actor, center, angle):
 
 
 
-def setup_camera(renderer, render_window, center1, center2, minZ, maxZ, minY, maxY, upper_opacity):
+def setup_camera(renderer, render_window, center1, center2, lower_bound, upper_opacity):
     # Get the active camera from the renderer
     cam1 = renderer.GetActiveCamera()
 
@@ -82,23 +83,23 @@ def setup_camera(renderer, render_window, center1, center2, minZ, maxZ, minY, ma
         (cam_position[2] - center1[2])**2
     )
 
-    distance_cam_to_bb_up = math.sqrt(
-        (cam_position[0] - center2[0])**2 +
-        (cam_position[1] - center2[1])**2 +
-        (cam_position[2] - center2[2])**2
-    )
-
-    gap_and_down = distance_cam_to_bb - distance_cam_to_bb_up
 
     # Calculate near and far clipping planes
-    near = distance_cam_to_bb - ((maxZ - minZ) * 0.5)
-    far = distance_cam_to_bb + ((maxZ - minZ) * 0.5)
+    near = distance_cam_to_bb - ((lower_bound[5] - lower_bound[4]) * 0.5)
+    far = distance_cam_to_bb + ((lower_bound[5] - lower_bound[4]) * 0.5)
 
     # Set the parallel scale based on Y bounding box values
-    cam1.SetParallelScale((maxY - minY) * 0.5)
+    cam1.SetParallelScale((lower_bound[3] - lower_bound[2]) * 0.5)
 
     # Set the clipping range based on output data
-    if upper_opacity != 0:
+    if upper_opacity != 0 and center2!=None :
+        distance_cam_to_bb_up = math.sqrt(
+            (cam_position[0] - center2[0])**2 +
+            (cam_position[1] - center2[1])**2 +
+            (cam_position[2] - center2[2])**2
+        )
+        gap_and_down = distance_cam_to_bb - distance_cam_to_bb_up
+
         cam1.SetClippingRange(near - gap_and_down, far)
     else:
         cam1.SetClippingRange(near, far)
@@ -134,3 +135,29 @@ def save_depth_image(output_file_path, scale_filter):
     depth_image_writer.Write()
 
     # The pipeline is set, you can now execute the filters and work with the output image.
+
+
+def render_png_in_second_window(render2,png_file_path):
+    # Ensure the file exists
+    if not os.path.exists(png_file_path):
+        print(f"File not found: {png_file_path}")
+        return
+
+    # Step 1: Read the PNG file using vtkPNGReader
+    png_reader = vtk.vtkPNGReader()
+    png_reader.SetFileName(png_file_path)
+    png_reader.Update()
+
+    # Step 2: Create an image actor for the PNG
+    image_actor = vtk.vtkImageActor()
+    image_actor.GetMapper().SetInputConnection(png_reader.GetOutputPort())
+
+    # Step 3: Clear any previous rendering in vtk_renderer2
+    render2.RemoveAllViewProps()
+
+    # Step 4: Add the PNG actor to vtk_renderer2
+    render2.AddActor(image_actor)
+
+    # Step 5: Reset the camera and render
+    render2.ResetCamera()
+    render2.GetRenderWindow().Render()

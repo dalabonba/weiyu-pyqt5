@@ -1,12 +1,14 @@
 
 from PyQt5.QtWidgets import QGroupBox, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton, QSlider
 from PyQt5.QtCore import Qt
-from .baseview import BaseView  # 导入 BaseView
+from .baseview import BaseView
 
-class MutipleDepthView(BaseView):  # 继承 BaseView
-    def __init__(self, parent_layout, model, renderinput) :
-        super().__init__(parent_layout, renderinput) 
+
+class MutipleDepthView(BaseView): 
+    def __init__(self, parent_layout, model, renderinput,renderinput2) :
+        super().__init__(parent_layout, renderinput,renderinput2)
         self.model = model
+        model.model_updated.connect(self.update_view)
 
     def create_depth(self,parent_layout,current_panel):
         if current_panel:
@@ -16,24 +18,13 @@ class MutipleDepthView(BaseView):  # 继承 BaseView
         layout = QVBoxLayout()
 
         # 上顎模型檔案選擇
-        upper_layout = QHBoxLayout()
-        upper_layout.addWidget(QLabel("上顎檔案:"))
         self.upper_file = QLineEdit()
-        upper_layout.addWidget(self.upper_file)
-        upper_button = QPushButton("選擇")
-        upper_button.clicked.connect(lambda: self.choose_folder(self.upper_file))  # 使用 BaseView 的 choose_file
-        upper_layout.addWidget(upper_button)
-        layout.addLayout(upper_layout)
+        self.create_file_selection_layout(layout, "上顎檔案:", self.upper_file,self.model.set_upper_folder)
+
 
         # 下顎模型檔案選擇
-        lower_layout = QHBoxLayout()
-        lower_layout.addWidget(QLabel("下顎檔案:"))
         self.lower_file = QLineEdit()
-        lower_layout.addWidget(self.lower_file)
-        lower_button = QPushButton("選擇")
-        lower_button.clicked.connect(lambda: self.choose_folder(self.lower_file))  # 使用 BaseView 的 choose_file
-        lower_layout.addWidget(lower_button)
-        layout.addLayout(lower_layout)
+        self.create_file_selection_layout(layout, "下顎檔案:", self.lower_file,self.model.set_lower_folder)
 
         # 旋轉角度輸入
         angle_layout = QHBoxLayout()
@@ -50,6 +41,7 @@ class MutipleDepthView(BaseView):  # 继承 BaseView
         self.upper_opacity = QSlider(Qt.Horizontal)
         self.upper_opacity.setRange(0, 1)
         self.upper_opacity.setValue(1)
+        self.upper_opacity.valueChanged.connect(self.update_upper_opacity)
         upper_opacity_layout.addWidget(self.upper_opacity)
         layout.addLayout(upper_opacity_layout)
 
@@ -59,24 +51,43 @@ class MutipleDepthView(BaseView):  # 继承 BaseView
         self.lower_opacity = QSlider(Qt.Horizontal)
         self.lower_opacity.setRange(0, 1)
         self.lower_opacity.setValue(1)
+        self.lower_opacity.valueChanged.connect(self.update_lower_opacity)
         lower_opacity_layout.addWidget(self.lower_opacity)
         layout.addLayout(lower_opacity_layout)
 
         # 輸出深度圖文件夾選擇
-        output_layout = QHBoxLayout()
-        output_layout.addWidget(QLabel("輸出文件夾:"))
         self.output_folder = QLineEdit()
-        output_layout.addWidget(self.output_folder)
-        output_button = QPushButton("選擇")
-        output_button.clicked.connect(lambda: self.choose_folder(self.output_folder))  # 使用 BaseView 的 choose_folder
-        output_layout.addWidget(output_button)
-        layout.addLayout(output_layout)
+        self.create_file_selection_layout(layout, "輸出文件夾:", self.output_folder,self.model.set_output_folder)
 
         # 保存按鈕
         save_button = QPushButton("保存深度圖")
-        save_button.clicked.connect(self.save_function_file)  # 使用 BaseView 的 save_depth_map
+        save_button.clicked.connect(self.save_depth_maps)
         layout.addWidget(save_button)
 
         panel.setLayout(layout)
         parent_layout.addWidget(panel)
         return panel
+
+    
+    def update_view(self):
+        # Update the view based on the model's current state
+        self.upper_file.setText(self.model.upper_folder)
+        self.lower_file.setText(self.model.lower_folder)
+        self.angle_input.setText(str(self.model.angle))
+        self.output_folder.setText(self.model.output_folder)
+        self.upper_opacity.setValue(int(self.model.upper_opacity ))
+        self.lower_opacity.setValue(int(self.model.lower_opacity ))
+        camera = self.render_input.GetActiveCamera()
+        camera.SetPosition(0, 0, 1)   # 設置相機到初始位置
+        camera.SetFocalPoint(0, 0, 0)  # 設置焦點到場景中心
+        camera.SetViewUp(0, 1, 0)     # 設置相機的"上"方向
+        self.render_input.ResetCamera()
+        self.render_input.GetRenderWindow().Render()
+
+    def update_upper_opacity(self):
+        opacity = self.upper_opacity.value() 
+        self.model.set_upper_opacity(opacity)
+
+    def update_lower_opacity(self):
+        opacity = self.lower_opacity.value()
+        self.model.set_lower_opacity(opacity)
