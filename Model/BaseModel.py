@@ -1,6 +1,6 @@
 from PyQt5.QtCore import QObject
 import os
-from Otherfunction import readmodel
+from Otherfunction import readmodel,pictureedgblack,fillwhite
 
 class BaseModel(QObject):
     def __init__(self):
@@ -59,10 +59,16 @@ class BaseModel(QObject):
             
             # Create the output file path
             output_file_path = self.output_folder+'/'+base_name+".png"
-            # if self.angle == 0 and (self.upper_opacity == 0 or self.lower_opacity == 0):
-            scale_filter=readmodel.setup_camera(renderer,renderer.GetRenderWindow()
+            if self.upper_opacity == 0 :
+                scale_filter=readmodel.setup_camera(renderer,renderer.GetRenderWindow()
+                                    ,self.lower_center,self.upper_center,lower_bound,self.upper_opacity)
+                readmodel.save_depth_image(output_file_path,scale_filter)
+                bound=pictureedgblack.get_image_bound(output_file_path)
+                fillwhite.process_image_pair(bound,output_file_path,output_file_path)
+            else:
+                scale_filter=readmodel.setup_camera(renderer,renderer.GetRenderWindow()
                                 ,self.lower_center,self.upper_center,lower_bound,self.upper_opacity)
-            readmodel.save_depth_image(output_file_path,scale_filter)
+                readmodel.save_depth_image(output_file_path,scale_filter)
             renderer.GetRenderWindow().SetSize(768, 768)
             readmodel.render_png_in_second_window(render2,output_file_path)
             self.reset()

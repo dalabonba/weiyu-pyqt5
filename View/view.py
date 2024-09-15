@@ -81,9 +81,7 @@ class View(QMainWindow):
         # Set the size of the widget to 256x256
         self.vtkWidget2.setFixedSize(768, 768)
         self.iren2.Initialize()
-        cam1 = self.vtk_renderer1.GetActiveCamera()
-        test=cam1.GetPosition()
-        print(test)
+   
 
 
     def connect_signals(self):

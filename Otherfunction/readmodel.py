@@ -61,6 +61,7 @@ def rotate_actor(actor, center, angle):
 
 
 def setup_camera(renderer, render_window, center1, center2, lower_bound, upper_opacity):
+    
     # Get the active camera from the renderer
     cam1 = renderer.GetActiveCamera()
 
