@@ -119,7 +119,11 @@ class SingleDepthView(BaseView):
         self.model.set_lower_opacity(opacity)
 
 
-
+    def save_depth_map(self):
+        if self.model.save_depth_map(self.render_input,self.render_input2):
+            print("Depth map saved successfully")
+        else:
+            print("Failed to save depth map")
 
     def update_view(self):
         self.upper_file.setText(self.model.upper_file)

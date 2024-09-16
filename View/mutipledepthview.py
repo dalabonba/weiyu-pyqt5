@@ -91,3 +91,9 @@ class MutipleDepthView(BaseView):
     def update_lower_opacity(self):
         opacity = self.lower_opacity.value()
         self.model.set_lower_opacity(opacity)
+
+    def save_depth_maps(self):
+        if self.model.save_depth_map_button(self.render_input,self.render_input2):
+            print("Depth map saved successfully")
+        else:
+            print("Failed to save depth map")

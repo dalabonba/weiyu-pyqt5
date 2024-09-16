@@ -4,7 +4,7 @@ from PyQt5.QtCore import Qt
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 import vtkmodules.all as vtk
 from . import singledepthview, mutipledepthview,mutipledepthview,aipredictview,edgeview,remeshview,occlusionview
-from Model import Singledepthmodel,Mutipledepthmodel
+from Model import Singledepthmodel,Mutipledepthmodel,Edgemodel
 
 
 class View(QMainWindow):
@@ -106,8 +106,8 @@ class View(QMainWindow):
 
     def create_edge_panel(self):
         self.clear_renderers()    
-        self.function_view = edgeview.ImageedgeView(self.buttonPanel,Mutipledepthmodel.BatchDepthModel(),self.vtk_renderer1,self.vtk_renderer2)
-        self.current_panel = self.function_view.create_depth(self.buttonPanel,self.current_panel)
+        self.function_view = edgeview.ImageedgeView(self.buttonPanel,Edgemodel.EdgeModel(),self.vtk_renderer1,self.vtk_renderer2)
+        self.current_panel = self.function_view.create_edge(self.buttonPanel,self.current_panel)
 
     def create_occlusion_panel(self):
         self.clear_renderers()    

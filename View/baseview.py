@@ -8,9 +8,22 @@ class BaseView:
         self.parent_layout = parent_layout  # 父布局
         self.render_input=renderinput
         self.render_input2=renderinput2
+
     def choose_file(self, line_edit):
         options = QFileDialog.Options()
         file_filter = "3D Model Files (*.ply *.stl *.obj)"
+        file_path, _ = QFileDialog.getOpenFileName(None, "選擇檔案", "", file_filter, options=options)
+        if file_path:
+            line_edit.setText(file_path)
+        else:
+            line_edit.setText(None)
+        return file_path
+    
+
+
+    def choose_image(self, line_edit):
+        options = QFileDialog.Options()
+        file_filter = " Image (*.png *.jpg *.jpeg)"
         file_path, _ = QFileDialog.getOpenFileName(None, "選擇檔案", "", file_filter, options=options)
         if file_path:
             line_edit.setText(file_path)
@@ -48,18 +61,11 @@ class BaseView:
         file_layout.addWidget(button)
         parent_layout.addLayout(file_layout)
 
-
-    def save_depth_map(self):
-        if self.model.save_depth_map(self.render_input,self.render_input2):
-            print("Depth map saved successfully")
-        else:
-            print("Failed to save depth map")
-
-
-    def save_depth_maps(self):
-        if self.model.save_depth_map_button(self.render_input,self.render_input2):
-            print("Depth map saved successfully")
-        else:
-            print("Failed to save depth map")
-
-
+    def save_function_file(self):
+        # Implement the logic to save the depth map
+        print(f"Saving depth map...")
+        print(f"Upper model: {self.upper_file.text()}")
+        print(f"Lower model: {self.lower_file.text()}")
+        print(f"Upper opacity: {self.upper_opacity.value()}%")
+        print(f"Lower opacity: {self.lower_opacity.value()}%")
+        print(f"Output folder: {self.output_folder.text()}")

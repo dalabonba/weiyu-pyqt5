@@ -7,6 +7,27 @@ class BaseModel(QObject):
         super().__init__()
 
 
+
+    def set_upper_folder(self, folder_path):
+        self.upper_folder = folder_path
+        if os.path.isdir(folder_path):
+            self.upper_files = self._get_files_in_folder(folder_path)
+            self.model_updated.emit()
+            return True
+        return False
+
+    def set_lower_folder(self, folder_path):
+        self.lower_folder = folder_path
+        if os.path.isdir(folder_path):
+            self.lower_files = self._get_files_in_folder(folder_path)
+            self.model_updated.emit()
+            return True
+        return False
+    
+    
+    def _get_files_in_folder(self, folder_path):
+        return [f for f in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, f))]
+
     def set_model_angle(self, angle):
         self.angle = angle
         if not hasattr(self, 'lower_actor'):
@@ -21,11 +42,6 @@ class BaseModel(QObject):
         else:
             self.lower_center = readmodel.calculate_center(self.lower_actor)
             readmodel.rotate_actor(self.lower_actor, self.lower_center,self.angle)
-        # else:
-        #     if self.upper_actor:
-        #         self.upper_center = readmodel.calculate_center(self.upper_actor)
-        #         readmodel.rotate_actor(self.upper_actor, self.upper_center,self.angle)
-
         self.model_updated.emit()
 
     def render_model(self,renderer,type):

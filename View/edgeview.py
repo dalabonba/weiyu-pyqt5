@@ -8,7 +8,7 @@ class ImageedgeView(BaseView):
         super().__init__(parent_layout, renderinput,renderinput2) 
         self.model = model
 
-    def create_depth(self,parent_layout,current_panel):
+    def create_edge(self,parent_layout,current_panel):
         if current_panel:
             parent_layout.removeWidget(current_panel)
 
@@ -16,41 +16,38 @@ class ImageedgeView(BaseView):
         layout = QVBoxLayout()
 
         # 上顎模型檔案選擇
-        upper_layout = QHBoxLayout()
-        upper_layout.addWidget(QLabel("上顎圖檔:"))
         self.upper_file = QLineEdit()
-        upper_layout.addWidget(self.upper_file)
-        upper_button = QPushButton("選擇")
-        upper_button.clicked.connect(lambda: self.choose_folder(self.upper_file))  # 使用 BaseView 的 choose_file
-        upper_layout.addWidget(upper_button)
-        layout.addLayout(upper_layout)
+        self.create_file_selection_layout(layout, "上顎圖檔:", self.upper_file,self.model.set_upper_folder)
+
 
         # 下顎模型檔案選擇
-        lower_layout = QHBoxLayout()
-        lower_layout.addWidget(QLabel("下顎圖檔:"))
         self.lower_file = QLineEdit()
-        lower_layout.addWidget(self.lower_file)
-        lower_button = QPushButton("選擇")
-        lower_button.clicked.connect(lambda: self.choose_folder(self.lower_file))  # 使用 BaseView 的 choose_file
-        lower_layout.addWidget(lower_button)
-        layout.addLayout(lower_layout)
+        self.create_file_selection_layout(layout, "下顎圖檔:", self.lower_file,self.model.set_lower_folder)
 
 
         # 輸出深度圖文件夾選擇
-        output_layout = QHBoxLayout()
-        output_layout.addWidget(QLabel("輸出文件夾:"))
+        self.output_layout = QHBoxLayout()
         self.output_folder = QLineEdit()
-        output_layout.addWidget(self.output_folder)
-        output_button = QPushButton("選擇")
-        output_button.clicked.connect(lambda: self.choose_folder(self.output_folder))  # 使用 BaseView 的 choose_folder
-        output_layout.addWidget(output_button)
-        layout.addLayout(output_layout)
+        self.create_file_selection_layout(layout, "輸出文件夾:", self.output_folder,self.model.set_output_folder)
 
         # 保存按鈕
         save_button = QPushButton("保存邊界線圖")
-        save_button.clicked.connect(self.save_function_file)  # 使用 BaseView 的 save_depth_map
+        save_button.clicked.connect(self.save_edge_file) 
         layout.addWidget(save_button)
 
         panel.setLayout(layout)
         parent_layout.addWidget(panel)
         return panel
+
+
+    def update_view(self):
+        # Update the view based on the model's current state
+        self.upper_file.setText(self.model.upper_folder)
+        self.lower_file.setText(self.model.lower_folder)
+        self.output_folder.setText(self.model.output_folder)
+
+    def save_edge_file(self):
+        if self.model.save_edge_button(self.render_input,self.render_input2):
+            print("Depth map saved successfully")
+        else:
+            print("Failed to save depth map")

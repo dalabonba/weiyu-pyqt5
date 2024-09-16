@@ -42,47 +42,44 @@ def get_image_bound(input_image_path, color=(255, 0, 0)):
 
 
 
-# def mark_boundary_points(input_image_path, output_folder, color=(255, 0, 0)):
-#     # 打開圖像
-#     img = Image.open(input_image_path)
+def mark_boundary_points(input_image_path, output_folder, color=(255, 0, 0)):
+    # 打开图像
+    img = Image.open(input_image_path)
     
-#     # 確保圖像是8位元深度的灰階圖像
-#     if img.mode != 'L':
-#         img = img.convert('L')
+    # 确保图像是8位深度的灰阶图像
+    if img.mode != 'L':
+        img = img.convert('L')
     
-#     # 創建一個新圖像來標記邊界點，初始化為黑色
-#     boundary_img = Image.new('RGB', img.size, (0, 0, 0))
-#     img = img.point(lambda p: p if p >= 10 else 0)
+    # 将图像转换为 numpy 数组
+    img_array = np.array(img)
     
-#     # 獲取圖像的寬度和高度
-#     width, height = img.size
+    # 创建一个新的 RGB 图像用于标记边界点
+    boundary_img_array = np.zeros((img_array.shape[0], img_array.shape[1], 3), dtype=np.uint8)
     
-#     # 迭代圖像的每個像素
-#     for y in range(height):
-#         for x in range(width):
-#             pixel_value = img.getpixel((x, y))
-            
-#             # 檢查是否是黑色像素
-#             if pixel_value > 0:
-#                 # 檢查上一個點是否小於255
-#                 if y > 0 and img.getpixel((x, y - 1)) == 0:
-#                     boundary_img.putpixel((x, y), color)  # 使用指定顏色標記
-                
-#                 # 檢查下一個點是否小於255
-#                 if y < height - 1 and img.getpixel((x, y + 1)) == 0:
-#                     boundary_img.putpixel((x, y), color)  # 使用指定顏色標記
-                
-#                 # 檢查左邊的點是否小於255
-#                 if x > 0 and img.getpixel((x - 1, y)) == 0:
-#                     boundary_img.putpixel((x, y), color)  # 使用指定顏色標記
-                
-#                 # 檢查右邊的點是否小於255
-#                 if x < width - 1 and img.getpixel((x + 1, y)) == 0:
-#                     boundary_img.putpixel((x, y), color)  # 使用指定顏色標記
+    # 创建一个掩码来标记边界点
+    boundary_mask = np.zeros_like(img_array, dtype=bool)
     
-#     # 建立輸出的檔名，保存到相同的資料夾下
-#     output_image_path = os.path.join(output_folder, os.path.basename(input_image_path))
-#     boundary_img.save(output_image_path)
+    # 标记所有非零像素点
+    non_zero_mask = img_array > 0
+    
+    # 使用卷积核来标记边界点
+    kernel = np.array([[0, 1, 0], [1, -4, 1], [0, 1, 0]], dtype=np.float32)
+    from scipy.ndimage import convolve
+    edge_mask = convolve(non_zero_mask.astype(float), kernel, mode='constant', cval=0.0) != 0
+    
+    # 更新边界掩码
+    boundary_mask[edge_mask] = True
+    
+    # 将边界掩码应用于边界图像数组
+    boundary_img_array[boundary_mask] = color
+    
+    # 将 numpy 数组转换回图像
+    boundary_img = Image.fromarray(boundary_img_array)
+    if not os.path.exists(output_folder):
+        os.makedirs(output_folder)
+    # 创建输出文件路径
+    output_image_path = os.path.join(output_folder, os.path.basename(input_image_path))
+    boundary_img.save(output_image_path)
 
 # # 設定輸出資料夾
 # output_folder_prep = os.path.join(base_folder, output_folder_base_prep)
