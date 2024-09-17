@@ -1,6 +1,8 @@
 from PIL import Image
 import os
 import numpy as np
+from scipy.ndimage import convolve
+
 # base_folder = "D://Users//user//Desktop//顏唯育-1勿刪//paper//crown//traincode//"
 # input_folders = ["test"]
 # output_folder_base_prep = "test//Prepedgered"
@@ -64,7 +66,6 @@ def mark_boundary_points(input_image_path, output_folder, color=(255, 0, 0)):
     
     # 使用卷积核来标记边界点
     kernel = np.array([[0, 1, 0], [1, -4, 1], [0, 1, 0]], dtype=np.float32)
-    from scipy.ndimage import convolve
     edge_mask = convolve(non_zero_mask.astype(float), kernel, mode='constant', cval=0.0) != 0
     
     # 更新边界掩码

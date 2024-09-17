@@ -1,7 +1,8 @@
 from PyQt5.QtCore import  pyqtSignal
 from .BaseModel import BaseModel
 from pathlib import Path
-from Otherfunction import readmodel,pictureedgblack
+from Otherfunction import readmodel,pictureedgblack,twopicturedege
+import os
 
 
 class EdgeModel(BaseModel):
@@ -37,4 +38,11 @@ class EdgeModel(BaseModel):
             readmodel.render_png_in_second_window(renderer,self.lower_file)
             pictureedgblack.mark_boundary_points(self.lower_file,self.output_folder+"/edgeDown")
             readmodel.render_png_in_second_window(render2,self.output_folder+"/edgeDown/"+lower_file)
+        red_image_files = os.listdir(self.output_folder+"/edgeDown/")
+        for image in red_image_files :
+            twopicturedege.combine_image(self.output_folder+"/edgeDown/"+image
+                                         , self.output_folder+"/edgeUp/"+image
+                                         , self.output_folder+"/combinetwoedge/"
+                                         ,(Path(self.lower_folder)/image).as_posix()
+                                         ,(Path(self.upper_folder)/image).as_posix())
         return True

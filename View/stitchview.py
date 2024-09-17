@@ -1,9 +1,8 @@
 
-from PyQt5.QtWidgets import QGroupBox, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton, QSlider
-from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QGroupBox, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton
 from .baseview import BaseView  
 
-class OcclusionView(BaseView):
+class StitchView(BaseView):
     def __init__(self, parent_layout, model, renderinput,renderinput2):
         super().__init__(parent_layout, renderinput,renderinput2)
         self.model = model
@@ -12,12 +11,12 @@ class OcclusionView(BaseView):
         if current_panel:
             parent_layout.removeWidget(current_panel)
 
-        panel = QGroupBox("批次創建上下顎咬合圖")
+        panel = QGroupBox("縫合網格")
         layout = QVBoxLayout()
 
         # 上顎模型檔案選擇
         upper_layout = QHBoxLayout()
-        upper_layout.addWidget(QLabel("上顎圖檔:"))
+        upper_layout.addWidget(QLabel("上顎模型:"))
         self.upper_file = QLineEdit()
         upper_layout.addWidget(self.upper_file)
         upper_button = QPushButton("選擇")
@@ -27,7 +26,7 @@ class OcclusionView(BaseView):
 
         # 下顎模型檔案選擇
         lower_layout = QHBoxLayout()
-        lower_layout.addWidget(QLabel("下顎圖檔:"))
+        lower_layout.addWidget(QLabel("下顎模型:"))
         self.lower_file = QLineEdit()
         lower_layout.addWidget(self.lower_file)
         lower_button = QPushButton("選擇")
@@ -47,7 +46,7 @@ class OcclusionView(BaseView):
         layout.addLayout(output_layout)
 
         # 保存按鈕
-        save_button = QPushButton("保存咬合圖")
+        save_button = QPushButton("保存縫合結果")
         save_button.clicked.connect(self.save_function_file)  # 使用 BaseView 的 save_depth_map
         layout.addWidget(save_button)
 

@@ -1,10 +1,9 @@
 from PyQt5.QtWidgets import (QMainWindow, QVBoxLayout, QHBoxLayout, QPushButton, QWidget, QSpacerItem, 
                              QSizePolicy,QDesktopWidget)
-from PyQt5.QtCore import Qt
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 import vtkmodules.all as vtk
-from . import singledepthview, mutipledepthview,mutipledepthview,aipredictview,edgeview,remeshview,occlusionview
-from Model import Singledepthmodel,Mutipledepthmodel,Edgemodel
+from . import singledepthview, mutipledepthview,mutipledepthview,aipredictview,edgeview,remeshview,stitchview
+from Model import Singledepthmodel,Mutipledepthmodel,Edgemodel,Aipredictmodel
 
 
 class View(QMainWindow):
@@ -35,9 +34,10 @@ class View(QMainWindow):
             "depthButton": "單次創建深度圖",
             "mutiple_depthButton": "多次創建深度圖",
             "edgeButton": "獲得牙齒邊界線圖",
-            "occlusionButton": "獲得咬合重疊處",
             "predictButton": "AI預測",
-            "reconstructButton": "3D模型重建"
+            "reconstructButton": "3D模型重建",
+            "stitchButton": "3D縫合網格",
+
         }
 
         buttonStyle = "font-size: 26px; font-family: '標楷體', 'Times New Roman'; font-weight: bold;"
@@ -77,8 +77,6 @@ class View(QMainWindow):
         self.vtkWidget2.GetRenderWindow().AddRenderer(self.vtk_renderer2)
         self.iren2 = self.vtkWidget2.GetRenderWindow().GetInteractor()
         self.vtk_renderer2.SetBackground(0.1, 0.4, 0.2)
-
-        # Set the size of the widget to 256x256
         self.vtkWidget2.setFixedSize(768, 768)
         self.iren2.Initialize()
    
@@ -88,9 +86,9 @@ class View(QMainWindow):
         self.depthButton.clicked.connect(lambda: self.create_depth_panel())
         self.mutiple_depthButton.clicked.connect(lambda: self.create_multiple_depth_panel())
         self.edgeButton.clicked.connect(lambda: self.create_edge_panel())
-        self.occlusionButton.clicked.connect(lambda: self.create_occlusion_panel())
         self.predictButton.clicked.connect(lambda: self.create_predict_panel())
         self.reconstructButton.clicked.connect(lambda: self.create_reconstruct_panel())
+        self.stitchButton.clicked.connect(lambda: self.create_stitch_panel())
 
 
 
@@ -109,20 +107,21 @@ class View(QMainWindow):
         self.function_view = edgeview.ImageedgeView(self.buttonPanel,Edgemodel.EdgeModel(),self.vtk_renderer1,self.vtk_renderer2)
         self.current_panel = self.function_view.create_edge(self.buttonPanel,self.current_panel)
 
-    def create_occlusion_panel(self):
-        self.clear_renderers()    
-        self.function_view = occlusionview.OcclusionView(self.buttonPanel,Mutipledepthmodel.BatchDepthModel(),self.vtk_renderer1,self.vtk_renderer2)
-        self.current_panel = self.function_view.create_depth(self.buttonPanel,self.current_panel)
 
     def create_predict_panel(self):
         # Create panel for AI prediction
         self.clear_renderers()    
-        self.function_view = aipredictview.AimodelView(self.buttonPanel,Mutipledepthmodel.BatchDepthModel(),self.vtk_renderer1,self.vtk_renderer2)
-        self.current_panel = self.function_view.create_depth(self.buttonPanel,self.current_panel)
+        self.function_view = aipredictview.AimodelView(self.buttonPanel,Aipredictmodel.AipredictModel(),self.vtk_renderer1,self.vtk_renderer2)
+        self.current_panel = self.function_view.create_predict(self.buttonPanel,self.current_panel)
 
     def create_reconstruct_panel(self):
         self.clear_renderers()    
         self.function_view = remeshview.RemeshView(self.buttonPanel,Mutipledepthmodel.BatchDepthModel(),self.vtk_renderer1,self.vtk_renderer2)
+        self.current_panel = self.function_view.create_depth(self.buttonPanel,self.current_panel)
+
+    def create_stitch_panel(self):
+        self.clear_renderers()    
+        self.function_view = stitchview.StitchView(self.buttonPanel,Mutipledepthmodel.BatchDepthModel(),self.vtk_renderer1,self.vtk_renderer2)
         self.current_panel = self.function_view.create_depth(self.buttonPanel,self.current_panel)
 
 
