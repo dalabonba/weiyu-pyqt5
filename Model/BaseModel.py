@@ -86,7 +86,7 @@ class BaseModel(QObject):
                                 ,self.lower_center,self.upper_center,lower_bound,self.upper_opacity)
                 readmodel.save_depth_image(output_file_path,scale_filter)
             renderer.GetRenderWindow().SetSize(768, 768)
-            readmodel.render_png_in_second_window(render2,output_file_path)
+            readmodel.render_file_in_second_window(render2,output_file_path)
             self.reset()
         else:
             print("Output folder not set")

@@ -25,9 +25,9 @@ class EdgeModel(BaseModel):
             self.upper_file = ""
             self.lower_file = ""
             self.upper_file = (Path(self.upper_folder)/upper_file).as_posix()
-            readmodel.render_png_in_second_window(renderer,self.upper_file)
+            readmodel.render_file_in_second_window(renderer,self.upper_file)
             pictureedgblack.mark_boundary_points(self.upper_file,self.output_folder+"/edgeUp", color=(255, 255, 0))
-            readmodel.render_png_in_second_window(render2,self.output_folder+"/edgeUp/"+upper_file)
+            readmodel.render_file_in_second_window(render2,self.output_folder+"/edgeUp/"+upper_file)
         for  lower_file in  self.lower_files:
             render2.GetRenderWindow().Render()
             render2.ResetCamera()
@@ -35,9 +35,9 @@ class EdgeModel(BaseModel):
             self.upper_file = ""
             self.lower_file = ""
             self.lower_file = (Path(self.lower_folder)/lower_file).as_posix()
-            readmodel.render_png_in_second_window(renderer,self.lower_file)
+            readmodel.render_file_in_second_window(renderer,self.lower_file)
             pictureedgblack.mark_boundary_points(self.lower_file,self.output_folder+"/edgeDown")
-            readmodel.render_png_in_second_window(render2,self.output_folder+"/edgeDown/"+lower_file)
+            readmodel.render_file_in_second_window(render2,self.output_folder+"/edgeDown/"+lower_file)
         red_image_files = os.listdir(self.output_folder+"/edgeDown/")
         for image in red_image_files :
             twopicturedege.combine_image(self.output_folder+"/edgeDown/"+image

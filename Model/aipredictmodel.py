@@ -1,7 +1,7 @@
 from PyQt5.QtCore import  pyqtSignal
 from .BaseModel import BaseModel
 import os
-from Otherfunction import readmodel,singleimgcolor
+from Otherfunction import readmodel,singleimgcolor,trianglegood
 class AipredictModel(BaseModel):
     model_updated = pyqtSignal()  # Define the signal at the class level
     
@@ -33,7 +33,10 @@ class AipredictModel(BaseModel):
             base_name = os.path.splitext(os.path.basename(image_file_cleaned))[0]
             output_file_path = self.output_folder+'/ai_'+base_name+".png"
             singleimgcolor.apply_gan_model(self.model_folder, self.image_file, output_file_path)
-            readmodel.render_png_in_second_window(render2,output_file_path)
+            reference_ply = "D:/Weekly_Report/Thesis_Weekly_Report/paper/paper_Implementation/remesh/alldata"+f"/{base_name}.ply"
+            output_stl_path = self.output_folder+'/ai_'+base_name+".stl"
+            trianglegood.process_image_to_stl(output_file_path,output_stl_path,reference_ply)
+            readmodel.render_file_in_second_window(render2,output_stl_path)
         renderer.GetRenderWindow().SetSize(768, 768)
 
         return True

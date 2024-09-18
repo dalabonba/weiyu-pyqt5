@@ -138,27 +138,52 @@ def save_depth_image(output_file_path, scale_filter):
     # The pipeline is set, you can now execute the filters and work with the output image.
 
 
-def render_png_in_second_window(render2,png_file_path):
+def render_file_in_second_window(render2, file_path):
+    """
+    Renders either an STL model or a PNG image in the second VTK render window.
+
+    Args:
+        render2 (vtkRenderer): The VTK renderer to render the file in.
+        file_path (str): The file path of the image (PNG) or model (STL).
+    """
     # Ensure the file exists
-    if not os.path.exists(png_file_path):
-        print(f"File not found: {png_file_path}")
+    if not os.path.exists(file_path):
+        print(f"File not found: {file_path}")
         return
 
-    # Step 1: Read the PNG file using vtkPNGReader
-    png_reader = vtk.vtkPNGReader()
-    png_reader.SetFileName(png_file_path)
-    png_reader.Update()
+    # Get the file extension to determine whether it's PNG or STL
+    file_extension = os.path.splitext(file_path)[1].lower()
 
-    # Step 2: Create an image actor for the PNG
-    image_actor = vtk.vtkImageActor()
-    image_actor.GetMapper().SetInputConnection(png_reader.GetOutputPort())
+    if file_extension == ".png":
+        # Handle PNG files with vtkPNGReader
+        reader = vtk.vtkPNGReader()
+    elif file_extension == ".stl":
+        # Handle STL files with vtkSTLReader
+        reader = vtk.vtkSTLReader()
+    else:
+        print(f"Unsupported file format: {file_extension}")
+        return
+    reader.SetFileName(file_path)
+    reader.Update()
 
-    # Step 3: Clear any previous rendering in vtk_renderer2
+    # Create an actor for rendering
+    if file_extension == ".png":
+        # For PNG, use vtkImageActor
+        actor = vtk.vtkImageActor()
+        actor.GetMapper().SetInputConnection(reader.GetOutputPort())
+    elif file_extension == ".stl":
+        # For STL, use vtkActor and vtkPolyDataMapper
+        mapper = vtk.vtkPolyDataMapper()
+        mapper.SetInputConnection(reader.GetOutputPort())
+        actor = vtk.vtkActor()
+        actor.SetMapper(mapper)
+
+    # Clear any previous rendering in vtk_renderer2
     render2.RemoveAllViewProps()
 
-    # Step 4: Add the PNG actor to vtk_renderer2
-    render2.AddActor(image_actor)
+    # Add the actor to the renderer
+    render2.AddActor(actor)
 
-    # Step 5: Reset the camera and render
+    # Reset the camera and render
     render2.ResetCamera()
     render2.GetRenderWindow().Render()

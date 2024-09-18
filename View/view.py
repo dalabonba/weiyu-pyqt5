@@ -3,7 +3,7 @@ from PyQt5.QtWidgets import (QMainWindow, QVBoxLayout, QHBoxLayout, QPushButton,
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 import vtkmodules.all as vtk
 from . import singledepthview, mutipledepthview,mutipledepthview,aipredictview,edgeview,remeshview,stitchview
-from Model import Singledepthmodel,Mutipledepthmodel,Edgemodel,Aipredictmodel
+from Model import Singledepthmodel,Mutipledepthmodel,Edgemodel,Aipredictmodel,Remeshmodel
 
 
 class View(QMainWindow):
@@ -116,8 +116,8 @@ class View(QMainWindow):
 
     def create_reconstruct_panel(self):
         self.clear_renderers()    
-        self.function_view = remeshview.RemeshView(self.buttonPanel,Mutipledepthmodel.BatchDepthModel(),self.vtk_renderer1,self.vtk_renderer2)
-        self.current_panel = self.function_view.create_depth(self.buttonPanel,self.current_panel)
+        self.function_view = remeshview.RemeshView(self.buttonPanel,Remeshmodel.RemeshModel(),self.vtk_renderer1,self.vtk_renderer2)
+        self.current_panel = self.function_view.create_remesh(self.buttonPanel,self.current_panel)
 
     def create_stitch_panel(self):
         self.clear_renderers()    

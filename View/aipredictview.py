@@ -68,4 +68,4 @@ class AimodelView(BaseView):
         self.image_file.setText(self.model.image_file)
         self.output_folder.setText(self.model.output_folder)
         if self.model.image_file:
-            readmodel.render_png_in_second_window(self.render_input,self.model.image_file)
+            readmodel.render_file_in_second_window(self.render_input,self.model.image_file)
