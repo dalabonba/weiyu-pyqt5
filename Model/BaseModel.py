@@ -33,35 +33,32 @@ class BaseModel(QObject):
         if not hasattr(self, 'lower_actor'):
             self.model_updated.emit()
             return
-        if self.lower_actor and not hasattr(self, 'upper_actor'):
-                self.lower_center = readmodel.calculate_center(self.lower_actor)
-                readmodel.rotate_actor(self.lower_actor, self.lower_center,self.angle)
-        elif self.upper_file!='' and self.lower_actor:
+        if self.upper_file!='' and self.lower_actor:
             readmodel.rotate_actor(self.upper_actor, self.models_center,self.angle)
             readmodel.rotate_actor(self.lower_actor, self.models_center,self.angle)
         else:
             self.lower_center = readmodel.calculate_center(self.lower_actor)
             readmodel.rotate_actor(self.lower_actor, self.lower_center,self.angle)
-        self.model_updated.emit()
-
-    def render_model(self,renderer,type):
-        renderer.RemoveAllViewProps()
-        self.upper_actor = None
-        self.lower_actor = None
-        if type == 'up' or self.upper_file:
-            model1 = readmodel.load_3d_model(self.upper_file)
-            self.upper_actor = readmodel.create_actor(model1, (1, 0, 0))  # Red color
-            self.upper_actor.GetProperty().SetOpacity(self.upper_opacity)
-            self.upper_center = readmodel.calculate_center(self.upper_actor)
-            renderer.AddActor(self.upper_actor)
-        if type == 'down' or self.lower_file:
-            model2 = readmodel.load_3d_model(self.lower_file)
-            self.lower_actor = readmodel.create_actor(model2, (0, 1, 0))  # Green color
-            self.lower_actor.GetProperty().SetOpacity(self.lower_opacity)
             self.lower_center = readmodel.calculate_center(self.lower_actor)
-            renderer.AddActor(self.lower_actor)
+        self.model_updated.emit()
+# 為了確定使用者讀上顎下顎或者上下顎都可以用到
+    def render_model(self,renderer):
+        renderer.RemoveAllViewProps() 
+        if  self.upper_file:
+                model1 = readmodel.load_3d_model(self.upper_file)
+                self.upper_actor = readmodel.create_actor(model1, (1, 0, 0))  # Red color
+                self.upper_actor.GetProperty().SetOpacity(self.upper_opacity)
+                self.upper_center = readmodel.calculate_center(self.upper_actor)
+                renderer.AddActor(self.upper_actor)
+        if  self.lower_file:
+                model2 = readmodel.load_3d_model(self.lower_file)
+                self.lower_actor = readmodel.create_actor(model2, (0, 1, 0))  # Green color
+                self.lower_actor.GetProperty().SetOpacity(self.lower_opacity)
+                self.lower_center = readmodel.calculate_center(self.lower_actor)
+                renderer.AddActor(self.lower_actor)
         if  self.lower_file and  self.upper_file:
             self.models_center = readmodel.twomodel_bound(self.lower_actor.GetBounds(),self.upper_actor.GetBounds())
+        renderer.ResetCamera()
         renderer.GetRenderWindow().Render()
 
 
@@ -69,7 +66,7 @@ class BaseModel(QObject):
         renderer.GetRenderWindow().SetSize(256, 256)
         if self.lower_actor and  self.output_folder:
             lower_bound = self.lower_actor.GetBounds()
-            upper_file_cleaned = self.upper_file.strip("' ").strip()
+            upper_file_cleaned = self.lower_file.strip("' ").strip()
             # Extract the file name without the extension from self.upper_file
             base_name = os.path.splitext(os.path.basename(upper_file_cleaned))[0]
             
@@ -77,17 +74,17 @@ class BaseModel(QObject):
             output_file_path = self.output_folder+'/'+base_name+".png"
             if self.upper_opacity == 0 :
                 scale_filter=readmodel.setup_camera(renderer,renderer.GetRenderWindow()
-                                    ,self.lower_center,self.upper_center,lower_bound,self.upper_opacity)
+                                    ,self.lower_center,self.upper_center,lower_bound,self.upper_opacity,self.angle)
                 readmodel.save_depth_image(output_file_path,scale_filter)
                 bound=pictureedgblack.get_image_bound(output_file_path)
                 fillwhite.process_image_pair(bound,output_file_path,output_file_path)
             else:
                 scale_filter=readmodel.setup_camera(renderer,renderer.GetRenderWindow()
-                                ,self.lower_center,self.upper_center,lower_bound,self.upper_opacity)
+                                ,self.lower_center,self.upper_center,lower_bound,self.upper_opacity,self.angle)
                 readmodel.save_depth_image(output_file_path,scale_filter)
             renderer.GetRenderWindow().SetSize(768, 768)
             readmodel.render_file_in_second_window(render2,output_file_path)
-            self.reset()
+            self.reset(renderer)
         else:
             print("Output folder not set")
         print(f"Saving depth map to {self.output_folder}")
@@ -102,10 +99,9 @@ class BaseModel(QObject):
             return True
         return False
     
-    def reset(self):
+    def reset(self,renderer):
         self.upper_file = ""
         self.lower_file = ""
-        self.angle = 0
         self.upper_center = None
         self.lower_center = None
         self.models_center = None
@@ -114,4 +110,8 @@ class BaseModel(QObject):
             del self.upper_actor
         if hasattr(self, 'lower_actor'):
             del self.lower_actor
+        camera = renderer.GetActiveCamera()
+        camera.SetPosition(0, 0, 1)   # 設置相機到初始位置
+        camera.SetFocalPoint(0, 0, 0)  # 設置焦點到場景中心
+        camera.SetViewUp(0, 1, 0)     # 設置相機的"上"方向
         self.model_updated.emit()

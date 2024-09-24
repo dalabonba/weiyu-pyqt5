@@ -60,7 +60,7 @@ def rotate_actor(actor, center, angle):
 
 
 
-def setup_camera(renderer, render_window, center1, center2, lower_bound, upper_opacity):
+def setup_camera(renderer, render_window, center1, center2, lower_bound, upper_opacity,angle):
     
     # Get the active camera from the renderer
     cam1 = renderer.GetActiveCamera()
@@ -92,7 +92,7 @@ def setup_camera(renderer, render_window, center1, center2, lower_bound, upper_o
     # Set the parallel scale based on Y bounding box values
     cam1.SetParallelScale((lower_bound[3] - lower_bound[2]) * 0.5)
 
-    # Set the clipping range based on output data
+    # # Set the clipping range based on output data
     if upper_opacity != 0 and center2!=None :
         distance_cam_to_bb_up = math.sqrt(
             (cam_position[0] - center2[0])**2 +
@@ -102,10 +102,12 @@ def setup_camera(renderer, render_window, center1, center2, lower_bound, upper_o
         gap_and_down = distance_cam_to_bb - distance_cam_to_bb_up
 
         cam1.SetClippingRange(near - gap_and_down, far)
+    elif angle != 0:
+        cam1.SetClippingRange(near, far-((far-near)*0.5))
     else:
         cam1.SetClippingRange(near, far)
 
-    # Set the active camera for the renderer
+    # # Set the active camera for the renderer
     renderer.SetActiveCamera(cam1)
     # Create vtkWindowToImageFilter to get the depth image from the render window
     depth_image_filter = vtk.vtkWindowToImageFilter()

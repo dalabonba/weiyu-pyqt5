@@ -3,10 +3,10 @@ import os
 import numpy as np
 from scipy.ndimage import convolve
 
-# base_folder = "D://Users//user//Desktop//顏唯育-1勿刪//paper//crown//traincode//"
-# input_folders = ["test"]
-# output_folder_base_prep = "test//Prepedgered"
-# output_folder_base_op = "test//Prepedgeyellow"
+# base_folder = "D:/Weekly_Report/Thesis_Weekly_Report/paper/paper_Implementation/remesh/"
+# input_folders = ["c++bug"]
+# output_folder_base_prep = "c++bug//Downred"
+# output_folder_base_op = "c++bug//Upyellow"
 
 
 

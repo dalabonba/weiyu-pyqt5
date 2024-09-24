@@ -84,7 +84,7 @@ class SingleDepthView(BaseView):
     def choose_upper_file(self):
         file_path = self.choose_file(self.upper_file)
         if file_path and self.model.set_upper_file(file_path):
-            self.model.render_model(self.render_input,'up')
+            self.model.render_model(self.render_input)
         else:
             if hasattr(self.model, 'upper_actor') and self.model.upper_actor:
                 self.render_input.RemoveActor(self.model.upper_actor)
@@ -98,7 +98,7 @@ class SingleDepthView(BaseView):
     def choose_lower_file(self):
         file_path = self.choose_file(self.lower_file)
         if file_path and self.model.set_lower_file(file_path):
-            self.model.render_model(self.render_input,'down')
+            self.model.render_model(self.render_input)
         else:
             if hasattr(self.model, 'lower_actor') and self.model.lower_actor:
                 self.render_input.RemoveActor(self.model.lower_actor)
@@ -132,15 +132,9 @@ class SingleDepthView(BaseView):
         self.output_folder.setText(self.model.output_folder)
         self.upper_opacity.setValue(int(self.model.upper_opacity ))
         self.lower_opacity.setValue(int(self.model.lower_opacity ))
-        self.render_input.RemoveAllViewProps()  # Clear all actors
-        if self.model.upper_file:
-            self.model.render_model(self.render_input, 'up')
-        if self.model.lower_file:
-            self.model.render_model(self.render_input, 'down')
-        # 手動重置相機的位置、焦點等參數
-        camera = self.render_input.GetActiveCamera()
-        camera.SetPosition(0, 0, 1)   # 設置相機到初始位置
-        camera.SetFocalPoint(0, 0, 0)  # 設置焦點到場景中心
-        camera.SetViewUp(0, 1, 0)     # 設置相機的"上"方向
+        # if self.model.upper_file:
+        #     self.model.render_model(self.render_input, 'up')
+        # if self.model.lower_file:
+        #     self.model.render_model(self.render_input, 'down')
         self.render_input.ResetCamera()
         self.render_input.GetRenderWindow().Render()
