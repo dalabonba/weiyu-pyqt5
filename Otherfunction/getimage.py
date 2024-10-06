@@ -6,7 +6,7 @@ def apply_blue_mask(original_image_array, blue_mask_array,outdata_name):
     # original_image = cv2.imread(os.path.join(original_image_path))
     # blue_mask_filename = os.path.join(blue_mask_path)
     # 將原始圖像的白色部分變為黑色
-    white_mask = cv2.inRange(original_image_array, 255, 255)
+    white_mask = cv2.inRange(original_image_array, np.array([255]), np.array([255]))
     original_image_array[np.where(white_mask > 0)] = [0]
 
     # 應用藍色區塊掩碼
@@ -15,8 +15,7 @@ def apply_blue_mask(original_image_array, blue_mask_array,outdata_name):
     
     # 使用藍色掩碼到原始圖像
     result_image_array = cv2.bitwise_and(original_image_array, original_image_array, mask=thresholded_mask)
-    result_image_8bit = cv2.convertScaleAbs(result_image_array)
-    cv2.imwrite(outdata_name, result_image_8bit)
+
     cv2.imwrite(outdata_name, result_image_array)
 
 

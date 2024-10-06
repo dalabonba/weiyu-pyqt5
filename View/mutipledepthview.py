@@ -77,10 +77,10 @@ class MutipleDepthView(BaseView):
         self.output_folder.setText(self.model.output_folder)
         self.upper_opacity.setValue(int(self.model.upper_opacity ))
         self.lower_opacity.setValue(int(self.model.lower_opacity ))
-        camera = self.render_input.GetActiveCamera()
-        camera.SetPosition(0, 0, 1)   # 設置相機到初始位置
-        camera.SetFocalPoint(0, 0, 0)  # 設置焦點到場景中心
-        camera.SetViewUp(0, 1, 0)     # 設置相機的"上"方向
+        # camera = self.render_input.GetActiveCamera()
+        # camera.SetPosition(0, 0, 1)   # 設置相機到初始位置
+        # camera.SetFocalPoint(0, 0, 0)  # 設置焦點到場景中心
+        # camera.SetViewUp(0, 1, 0)     # 設置相機的"上"方向
         self.render_input.ResetCamera()
         self.render_input.GetRenderWindow().Render()
 

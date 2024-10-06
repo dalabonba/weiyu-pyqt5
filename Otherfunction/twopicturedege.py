@@ -44,7 +44,7 @@ def process_image(img_array, img1_array):
         end_x = min(red_end_x, yellow_end_x)
         
         if end_x > start_x:
-            result[y, start_x:end_x+1] = np.array([0, 0, 255])  # Blue
+            result[y, start_x:end_x+1] = np.array([255, 0, 0])  # Blue bgr
     
     return result
 
@@ -58,12 +58,12 @@ def combine_image(input_image_path, input2_image_path, output_folder,downimage,u
     img1_array = np.array(img1)
     # Process the image
     blue_result_array = process_image(img_array, img1_array)
+    # cv2.imwrite(output_image_path, blue_result_array)
     get_combine_data = calculate_image_difference(upimage,downimage)
     combine_image_array_np = np.array(get_combine_data)
     blue_image_array_np = np.array(blue_result_array)
     
     # Save the result
-    # Image.fromarray(blue_image_array_np.astype('uint8')).save(output_image_path)
     apply_blue_mask(combine_image_array_np,blue_image_array_np,output_image_path)
 
 

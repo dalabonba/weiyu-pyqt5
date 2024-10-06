@@ -60,7 +60,7 @@ def rotate_actor(actor, center, angle):
 
 
 
-def setup_camera(renderer, render_window, center1, center2, lower_bound, upper_opacity,angle):
+def setup_camera(renderer, render_window, center1, center2=None, lower_bound=None, upper_opacity=None, angle=0):
     
     # Get the active camera from the renderer
     cam1 = renderer.GetActiveCamera()
@@ -93,7 +93,9 @@ def setup_camera(renderer, render_window, center1, center2, lower_bound, upper_o
     cam1.SetParallelScale((lower_bound[3] - lower_bound[2]) * 0.5)
 
     # # Set the clipping range based on output data
-    if upper_opacity != 0 and center2!=None :
+    if angle != 0:
+        cam1.SetClippingRange(near, far-((far-near)*0.5))
+    elif   upper_opacity != 0 and center2!=None :
         distance_cam_to_bb_up = math.sqrt(
             (cam_position[0] - center2[0])**2 +
             (cam_position[1] - center2[1])**2 +
@@ -102,8 +104,6 @@ def setup_camera(renderer, render_window, center1, center2, lower_bound, upper_o
         gap_and_down = distance_cam_to_bb - distance_cam_to_bb_up
 
         cam1.SetClippingRange(near - gap_and_down, far)
-    elif angle != 0:
-        cam1.SetClippingRange(near, far-((far-near)*0.5))
     else:
         cam1.SetClippingRange(near, far)
 

@@ -61,11 +61,3 @@ class BaseView:
         file_layout.addWidget(button)
         parent_layout.addLayout(file_layout)
 
-    def save_function_file(self):
-        # Implement the logic to save the depth map
-        print(f"Saving depth map...")
-        print(f"Upper model: {self.upper_file.text()}")
-        print(f"Lower model: {self.lower_file.text()}")
-        print(f"Upper opacity: {self.upper_opacity.value()}%")
-        print(f"Lower opacity: {self.lower_opacity.value()}%")
-        print(f"Output folder: {self.output_folder.text()}")

@@ -34,11 +34,6 @@ class BatchDepthModel(BaseModel):
                 render2.GetRenderWindow().Render()
                 render2.ResetCamera()
                 render2.RemoveAllViewProps()
-                self.upper_file = ""
-                self.upper_center = None
-                self.models_center = None
-                self.lower_file = ""
-                self.lower_center = None
                 self.lower_file = (Path(self.lower_folder)/lower_file).as_posix()
                 if not self.lower_file:
                     pass
@@ -51,11 +46,6 @@ class BatchDepthModel(BaseModel):
                 render2.GetRenderWindow().Render()
                 render2.ResetCamera()
                 render2.RemoveAllViewProps()
-                self.upper_file = ""
-                self.upper_center = None
-                self.models_center = None
-                self.lower_file = ""
-                self.lower_center = None
                 self.upper_file = (Path(self.upper_folder)/upper_file).as_posix()
                 self.lower_file = (Path(self.lower_folder)/lower_file).as_posix()
                 if not self.lower_file:

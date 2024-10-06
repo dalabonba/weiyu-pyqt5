@@ -40,6 +40,7 @@ def process_image_pair(img1, img2_path, output_path):
         if len(starts) == len(ends):
             for start, end in zip(starts, ends):
                 result[row, start:end+1] = 0  # 將區間內的值設為0
+    cv2.imwrite(output_path, result)
 
     #     # 獲取 result 圖像的高度和寬度
     # height, width = result.shape
@@ -69,7 +70,6 @@ def process_image_pair(img1, img2_path, output_path):
     #             break  # 找到一對起點和終點後，退出當前行的循環。
 
 #     # 保存結果
-    cv2.imwrite(output_path, result)
 # folder1 = 'D:/Weekly_Report/Thesis_Weekly_Report/paper/paper_Implementation/remesh/c++bug/Downred/' # 包含第一張圖（紅色邊框）的資料夾
 # folder2 = 'D:/Weekly_Report/Thesis_Weekly_Report/paper/paper_Implementation/remesh/c++bug/Down/' # 包含第二張圖（深度圖）的資料夾
 # output_folder = 'D:/Weekly_Report/Thesis_Weekly_Report/paper/paper_Implementation/remesh/c++bug/Downfill/' # 輸出結果的資料夾
