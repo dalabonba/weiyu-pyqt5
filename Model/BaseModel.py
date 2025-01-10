@@ -46,14 +46,14 @@ class BaseModel(QObject):
         renderer.RemoveAllViewProps() 
         if hasattr(self, 'upper_file'):
                 if self.upper_file != '':
-                    model1 = readmodel.load_3d_model(self.upper_file)
-                    self.upper_actor = readmodel.create_actor(model1, (1, 0, 0))  # Red color
+                    self.model1 = readmodel.load_3d_model(self.upper_file)
+                    self.upper_actor = readmodel.create_actor(self.model1, (1, 0, 0))  # Red color
                     self.upper_actor.GetProperty().SetOpacity(self.upper_opacity)
                     self.upper_center = readmodel.calculate_center(self.upper_actor)
                     renderer.AddActor(self.upper_actor)
         if  self.lower_file:
-                model2 = readmodel.load_3d_model(self.lower_file)
-                self.lower_actor = readmodel.create_actor(model2, (0, 1, 0))  # Green color
+                self.model2 = readmodel.load_3d_model(self.lower_file)
+                self.lower_actor = readmodel.create_actor(self.model2, (0, 1, 0))  # Green color
                 self.lower_actor.GetProperty().SetOpacity(self.lower_opacity)
                 self.lower_center = readmodel.calculate_center(self.lower_actor)
                 renderer.AddActor(self.lower_actor)
@@ -63,7 +63,7 @@ class BaseModel(QObject):
         renderer.GetRenderWindow().Render()
 
 
-    def save_depth_map(self,renderer,render2):
+    def save_depth_map(self,renderer):
         renderer.GetRenderWindow().SetSize(256, 256)
         if self.lower_actor and  self.output_folder:
             lower_bound = self.lower_actor.GetBounds()
@@ -84,13 +84,13 @@ class BaseModel(QObject):
                                 ,self.lower_center,self.upper_center,lower_bound,self.upper_opacity,self.angle)
                 readmodel.save_depth_image(output_file_path,scale_filter)
             renderer.GetRenderWindow().SetSize(768, 768)
-            readmodel.render_file_in_second_window(render2,output_file_path)
-            self.reset(renderer)
+            # readmodel.render_file_in_second_window(render2,output_file_path)
+            # self.reset(renderer)
         else:
             print("Output folder not set")
         # print(f"Saving depth map to {self.output_folder}")
         # In a real implementation, this method would actually save the depth map
-        return True
+        return output_file_path
     
 
     def set_output_folder(self, folder_path):

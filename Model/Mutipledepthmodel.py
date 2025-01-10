@@ -1,6 +1,7 @@
 from PyQt5.QtCore import  pyqtSignal
 from .BaseModel import BaseModel
 from pathlib import Path
+from Otherfunction import readmodel
 class BatchDepthModel(BaseModel):
     model_updated = pyqtSignal()
     
@@ -40,7 +41,9 @@ class BatchDepthModel(BaseModel):
                 if self.lower_file:
                     self.render_model(renderer)
                 self.set_model_angle(self.angle)
-                self.save_depth_map(renderer,render2)
+                output_file_path=self.save_depth_map(renderer)
+                readmodel.render_file_in_second_window(render2,output_file_path)
+                self.reset(renderer)
         else:
             for upper_file, lower_file in zip(self.upper_files, self.lower_files):
                 render2.GetRenderWindow().Render()
@@ -55,7 +58,8 @@ class BatchDepthModel(BaseModel):
                 if self.upper_file:
                     self.render_model(renderer)
                 self.set_model_angle(self.angle)
-                self.save_depth_map(renderer,render2)
-
+                output_file_path=self.save_depth_map(renderer)
+                readmodel.render_file_in_second_window(render2,output_file_path)
+                self.reset(renderer)
         return True
     

@@ -9,14 +9,13 @@ class BaseView:
         self.render_input=renderinput
         self.render_input2=renderinput2
 
-    def choose_file(self, line_edit):
+    def choose_file(self, line_edit, file_filter):
         options = QFileDialog.Options()
-        file_filter = "3D Model Files (*.ply *.stl *.obj)"
         file_path, _ = QFileDialog.getOpenFileName(None, "選擇檔案", "", file_filter, options=options)
         if file_path:
             line_edit.setText(file_path)
         else:
-            line_edit.setText(None)
+            line_edit.setText("")
         return file_path
     
 

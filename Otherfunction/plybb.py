@@ -1,124 +1,37 @@
-#plybb.py
-
+# plybb.py
 import numpy as np
 from plyfile import PlyData
 
-
-
 def get_bounding_box(vertices):
-     """
-     計算3D模型的邊界框
-    
-     參數:
-     vertices (numpy.array): 3D模型的頂點座標，每行一個頂點，每列一個座標（x、y、z）
-    
-     返回:
-     (min_x, max_x, min_y, max_y, min_z, max_z) (tuple): 邊界框的座標範圍
-     """
-     min_x = np.min(vertices[:, 0])
-     max_x = np.max(vertices[:, 0])
-     min_y = np.min(vertices[:, 1])
-     max_y = np.max(vertices[:, 1])
-     min_z = np.min(vertices[:, 2])
-     max_z = np.max(vertices[:, 2])
-    
-     return min_x, max_x, min_y, max_y, min_z, max_z
-
+    return (np.min(vertices[:, 0]), np.max(vertices[:, 0]),
+            np.min(vertices[:, 1]), np.max(vertices[:, 1]),
+            np.min(vertices[:, 2]), np.max(vertices[:, 2]))
 
 def read_ply(file_path):
-     """
-     讀取PLY文件，並返回頂點座標
-    
-     參數:
-     file_path (str): PLY檔案路徑
-    
-     返回:
-     vertices (numpy.array): 頂點座標，每行一個頂點，每列一個座標（x、y、z）
-     """
-     ply_data = PlyData.read(file_path)
-     vertices = np.vstack([ply_data['vertex']['x'],
-                           ply_data['vertex']['y'],
-                           ply_data['vertex']['z']]).T
-     return vertices
+    ply_data = PlyData.read(file_path)
+    vertices = np.vstack([ply_data['vertex']['x'],
+                          ply_data['vertex']['y'],
+                          ply_data['vertex']['z']]).T
+    return vertices
 
-
-def get_depth_from_gray_value(gray_value,depth_max,depth_min, min_z, max_z):
-  """
-  根據影像灰階值、最小深度值和最大深度值，計算深度值。
-
-  引數：
-    gray_value: 輸入值
-    depth_max:圖片最大深度值
-    depth_min:圖片最小深度值
-    min_z: 最小的3維BB
-    max_z: 最大的3維BB
-  回傳值：
-    深度值。
-  """
-  depthnum = (depth_max-depth_min) / (max_z - min_z)
-  threednum = gray_value / depthnum
-  z = threednum + min_z
-  return z
-
-
-def rotate_point_cloud(point_cloud, angle, axis='z'):
-    """
-    Rotate the point cloud along one of the axes
-    Args:
-        point_cloud: (np.array)
-        angle: (float) angle of rotation in degrees
-        axis: (str) 'x', 'y', or 'z'
-    Returns:
-        rotated_point_cloud: (np.array)
-    """
-    angle = angle * np.pi / 180.0  # convert to radians
-    
-    if axis == 'x':
-        rotation_matrix = np.array([[1, 0, 0],
-                                    [0, np.cos(angle), -np.sin(angle)],
-                                    [0, np.sin(angle), np.cos(angle)]])
-    elif axis == 'y':
-        rotation_matrix = np.array([[np.cos(angle), 0, np.sin(angle)],
-                                    [0, 1, 0],
-                                    [-np.sin(angle), 0, np.cos(angle)]])
-    else:  # axis == 'z'
-        rotation_matrix = np.array([[np.cos(angle), -np.sin(angle), 0],
-                                    [np.sin(angle), np.cos(angle), 0],
-                                    [0, 0, 1]])
-
-    rotated_point_cloud = np.dot(point_cloud, rotation_matrix.T)
-    return rotated_point_cloud
+def get_depth_from_gray_value(gray_value, depth_max, depth_min, min_z, max_z):
+    depth_scale = (depth_max - depth_min) / (max_z - min_z)
+    z = (gray_value / depth_scale) + min_z
+    return z
 
 def get_centroid(vertices):
+    return np.mean(vertices, axis=0)
+
+
+def get_step_depth(gray_value, max_gray, min_gray, min_z, max_z, steps=3):
     """
-    Calculate the centroid of a 3D model.
-
-    Parameters:
-        vertices (numpy.array): 3D model vertices, each row is a vertex, each column is a coordinate (x, y, z)
-
-    Returns:
-        (centroid_x, centroid_y, centroid_z) (tuple): Centroid coordinates
+    根據灰階值分段重建深度，適用於樓梯結構。
     """
-    centroid_x = np.mean(vertices[:, 0])
-    centroid_y = np.mean(vertices[:, 1])
-    centroid_z = np.mean(vertices[:, 2])
+    step_size = (max_gray - min_gray) / steps
+    depth_step = (max_z - min_z) / steps
+    # 將灰階分成多個深度階段
+    step_index = int((gray_value - min_gray) // step_size)
+    step_index = max(0, min(step_index, steps - 1))  # 防止超出範圍
+    return min_z + step_index * depth_step
 
-    return centroid_x, centroid_y, centroid_z
 
-# # 範例用法
-# if __name__ == "__main__":
-#      # 讀取PLY文件
-#      ply_file = "./data0004.ply" # 替換為你的PLY檔案路徑
-#      vertices = read_ply(ply_file)
-    
-#      # 計算邊界框
-#      min_x, max_x, min_y, max_y, min_z, max_z = get_bounding_box(vertices)
-    
-#      # 輸出邊界框座標範圍
-#      print("Bounding Box:")
-#      print("min_x:", min_x)
-#      print("max_x:", max_x)
-#      print("min_y:", min_y)
-#      print("max_y:", max_y)
-#      print("min_z:", min_z)
-#      print("max_z:", max_z)

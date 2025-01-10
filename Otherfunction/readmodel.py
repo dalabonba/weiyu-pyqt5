@@ -105,7 +105,10 @@ def setup_camera(renderer, render_window, center1, center2=None, lower_bound=Non
 
         cam1.SetClippingRange(near - gap_and_down, far)
     else:
+        # 這邊設置牙冠深淺  
+        # cam1.SetClippingRange(near, far-(far-near)*0.2)
         cam1.SetClippingRange(near, far)
+
 
     # # Set the active camera for the renderer
     renderer.SetActiveCamera(cam1)

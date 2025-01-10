@@ -64,11 +64,11 @@ def apply_gan_model(model_dir, input_file, output_file):
         f.write(output_data)
 
 
-apply_gan_model(
-    model_dir="D:/Weekly_Report/Thesis_Weekly_Report/paper/paper_Implementation/toothdemo/",
-    input_file="D:/Weekly_Report/Thesis_Weekly_Report/paper/paper_Implementation/toothdemo/data0220-t.png",
-    output_file="D:/Weekly_Report/Thesis_Weekly_Report/paper/paper_Implementation/toothdemo/data0220-gan.png"
-)
+# apply_gan_model(
+#     model_dir="D:/Weekly_Report/Thesis_Weekly_Report/paper/paper_Implementation/toothdemo/",
+#     input_file="D:/Weekly_Report/Thesis_Weekly_Report/paper/paper_Implementation/toothdemo/data0220-t.png",
+#     output_file="D:/Weekly_Report/Thesis_Weekly_Report/paper/paper_Implementation/toothdemo/data0220-gan.png"
+# )
 # def main():
 #     # 设置模型目录、输入文件和输出文件的默认值
 #     a.model_dir = "D:/Users/user/Desktop/VTKcode/GAN/trainingdepth/share_data/Pixtopix0204exporttf2/"

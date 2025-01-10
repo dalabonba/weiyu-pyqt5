@@ -2,7 +2,7 @@
 from PyQt5.QtWidgets import QGroupBox, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton, QSlider
 from PyQt5.QtCore import Qt
 from .baseview import BaseView  
-from PyQt5.QtCore import pyqtSlot
+from Otherfunction import readmodel
 
 class SingleDepthView(BaseView):
     def __init__(self, parent_layout, model,renderinput,renderinput2):
@@ -74,7 +74,7 @@ class SingleDepthView(BaseView):
 
         # 保存按鈕
         save_button = QPushButton("保存深度圖")
-        save_button.clicked.connect(self.save_depth_map)
+        save_button.clicked.connect(self.save_depth_single_map)
         layout.addWidget(save_button)
 
         panel.setLayout(layout)
@@ -82,7 +82,7 @@ class SingleDepthView(BaseView):
         return panel
  
     def choose_upper_file(self):
-        file_path = self.choose_file(self.upper_file)
+        file_path = self.choose_file(self.upper_file, "3D Model Files (*.ply *.stl *.obj)")
         if file_path and self.model.set_upper_file(file_path):
             self.model.render_model(self.render_input)
         else:
@@ -96,7 +96,7 @@ class SingleDepthView(BaseView):
 
 
     def choose_lower_file(self):
-        file_path = self.choose_file(self.lower_file)
+        file_path =  self.choose_file(self.lower_file, "3D Model Files (*.ply *.stl *.obj)")
         if file_path and self.model.set_lower_file(file_path):
             self.model.render_model(self.render_input)
         else:
@@ -119,11 +119,12 @@ class SingleDepthView(BaseView):
         self.model.set_lower_opacity(opacity)
 
 
-    def save_depth_map(self):
-        if self.model.save_depth_map(self.render_input,self.render_input2):
+    def save_depth_single_map(self):
+            output_file_path=self.model.save_depth_map(self.render_input)
+            readmodel.render_file_in_second_window(self.render_input2,output_file_path)
+            self.model.reset(self.render_input2)
             print("Depth map saved successfully")
-        else:
-            print("Failed to save depth map")
+
 
     def update_view(self):
         self.upper_file.setText(self.model.upper_file)

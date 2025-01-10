@@ -65,6 +65,8 @@ class View(QMainWindow):
         self.vtk_renderer1 = vtk.vtkRenderer()
         self.vtkWidget1.GetRenderWindow().AddRenderer(self.vtk_renderer1)
         self.iren1 = self.vtkWidget1.GetRenderWindow().GetInteractor()
+        self.iren1.SetInteractorStyle(vtk.vtkInteractorStyleTrackballCamera())
+        self.iren1.RemoveObservers('TimerEvent')  # 移除計時器事件，防止自動旋轉
         self.vtk_renderer1.SetBackground(0.1, 0.2, 0.4)
         
         # Set the size of the widget to 256x256
@@ -76,6 +78,8 @@ class View(QMainWindow):
         self.vtkWidget2.GetRenderWindow().SetSharedRenderWindow(self.vtkWidget1.GetRenderWindow())
         self.vtkWidget2.GetRenderWindow().AddRenderer(self.vtk_renderer2)
         self.iren2 = self.vtkWidget2.GetRenderWindow().GetInteractor()
+        self.iren2.SetInteractorStyle(vtk.vtkInteractorStyleTrackballCamera())
+        self.iren2.RemoveObservers('TimerEvent')  # 移除計時器事件，防止自動旋轉
         self.vtk_renderer2.SetBackground(0.1, 0.4, 0.2)
         self.vtkWidget2.setFixedSize(768, 768)
         self.iren2.Initialize()
@@ -111,7 +115,7 @@ class View(QMainWindow):
     def create_predict_panel(self):
         # Create panel for AI prediction
         self.clear_renderers()    
-        self.function_view = aipredictview.AimodelView(self.buttonPanel,Aipredictmodel.AipredictModel(),self.vtk_renderer1,self.vtk_renderer2)
+        self.function_view = aipredictview.AimodelView(self.buttonPanel,Aipredictmodel.AipredictModel(),self.vtkWidget1,self.vtk_renderer1,self.vtk_renderer2)
         self.current_panel = self.function_view.create_predict(self.buttonPanel,self.current_panel)
 
     def create_reconstruct_panel(self):

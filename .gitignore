@@ -3,6 +3,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+DAIS0104goodbesidewgan/
 # C extensions
 *.so
 

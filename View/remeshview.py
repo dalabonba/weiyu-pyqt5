@@ -55,7 +55,8 @@ class RemeshView(BaseView):
 
 
     def choose_lower_file(self):
-        file_path = self.choose_file(self.lower_file)
+        # lambda: self.choose_file(self.threed_file, "3D Model Files (*.ply *.stl *.obj)")
+        file_path = self.choose_file(self.lower_file, "3D Model Files (*.ply *.stl *.obj)")
         if file_path :
             self.model.set_reference_file(file_path)
         else:

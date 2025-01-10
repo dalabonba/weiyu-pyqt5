@@ -1,6 +1,7 @@
 
 from PyQt5.QtWidgets import QGroupBox, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton
 from .baseview import BaseView  
+from Otherfunction import readmodel
 
 class StitchView(BaseView):
     def __init__(self, parent_layout, model, renderinput,renderinput2):
@@ -47,9 +48,15 @@ class StitchView(BaseView):
 
         # 保存按鈕
         save_button = QPushButton("保存縫合結果")
-        save_button.clicked.connect(self.save_function_file)  # 使用 BaseView 的 save_depth_map
+        save_button.clicked.connect(self.save_depth_map)  # 使用 BaseView 的 save_depth_map
         layout.addWidget(save_button)
 
         panel.setLayout(layout)
         parent_layout.addWidget(panel)
         return panel
+
+    def save_depth_map(self):
+            output_file_path=self.model.save_depth_map(self.render_input)
+            readmodel.render_file_in_second_window(self.render_input2,output_file_path)
+            self.model.reset(self.render_input2)
+            print("Depth map saved successfully")
