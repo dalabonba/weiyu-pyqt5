@@ -1,0 +1,32 @@
+import os
+from ICPgood import MultiwayRegistration
+from remesh import PointCloudReconstruction
+
+def process_and_reconstruct(mesh_path1, mesh_path2, mesh_path3):
+
+
+    # 執行點雲配準
+    reg = MultiwayRegistration()
+    pcd_combined = reg.run_registration(mesh_path1, mesh_path2, mesh_path3)
+
+    # 進行泊松表面重建
+    reconstructor = PointCloudReconstruction(pcd_combined)
+    reconstructor.estimate_normals()
+    reconstructor.poisson_reconstruction(depth=8)
+    reconstructor.filter_low_density(quantile=0.032)
+    reconstructor.smooth_mesh(iterations=5)
+    reconstructor.compute_normals_and_color(color=[1, 0.706, 0])
+    
+    # 根據 mesh_path1 命名輸出檔案
+    base_name = os.path.basename(mesh_path1)  # 獲取檔案名稱
+    name_without_ext = os.path.splitext(base_name)[0]  # 去掉副檔名
+    output_filename = f"ICP_{name_without_ext}.stl"  # 加上前綴
+
+    # 儲存並顯示結果
+    reconstructor.save_mesh(output_filename)
+    reconstructor.visualize()
+    
+    print(f"重建完成，已儲存為: {output_filename}")
+
+# 執行函式
+# process_and_reconstruct( "./0005/rebbox/redata0005bbox.stl","./0005/rebbox/redata0005bbox-90.stl","./0005/rebbox/redata0005bbox--90.stl")
