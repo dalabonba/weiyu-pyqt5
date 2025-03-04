@@ -47,6 +47,7 @@ class AipredictModel(BaseModel):
         self.SaveCurrentRenderWindowAsPLY(renderer,self.output_folder+base_name+"_modtify.ply")
         self.lower_file = self.output_folder+base_name+"_modtify.ply"
         self.model_updated.emit()
+        # TODO  need to judge up and down , if up yes build three picture else build one picture
         if self.lower_file and  self.output_folder and self.model_folder:
             # 這邊先打編輯後的深度圖
             output_file_path=self.save_depth_map(renderer)

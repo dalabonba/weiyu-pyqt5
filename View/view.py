@@ -2,8 +2,9 @@ from PyQt5.QtWidgets import (QMainWindow, QVBoxLayout, QHBoxLayout, QPushButton,
                              QSizePolicy,QDesktopWidget)
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 import vtkmodules.all as vtk
-from . import singledepthview, mutipledepthview,mutipledepthview,aipredictview,edgeview,remeshview,stitchview
-from Model import Singledepthmodel,Mutipledepthmodel,Edgemodel,Aipredictmodel,Remeshmodel
+from . import (singledepthview, mutipledepthview,mutipledepthview,aipredictview,
+               edgeview,remeshview,stitchview,analysisview)
+from Model import Singledepthmodel,Mutipledepthmodel,Edgemodel,Aipredictmodel,Remeshmodel,Analysismodel
 
 
 class View(QMainWindow):
@@ -37,6 +38,7 @@ class View(QMainWindow):
             "predictButton": "AI預測",
             "reconstructButton": "3D模型重建",
             "stitchButton": "3D縫合網格",
+            "analysisButton": "2D圖像遮罩區域分析",
 
         }
 
@@ -93,6 +95,9 @@ class View(QMainWindow):
         self.predictButton.clicked.connect(lambda: self.create_predict_panel())
         self.reconstructButton.clicked.connect(lambda: self.create_reconstruct_panel())
         self.stitchButton.clicked.connect(lambda: self.create_stitch_panel())
+        self.analysisButton.clicked.connect(lambda: self.create_analysis_panel())
+
+        
 
 
 
@@ -127,6 +132,11 @@ class View(QMainWindow):
         self.clear_renderers()    
         self.function_view = stitchview.StitchView(self.buttonPanel,Mutipledepthmodel.BatchDepthModel(),self.vtk_renderer1,self.vtk_renderer2)
         self.current_panel = self.function_view.create_depth(self.buttonPanel,self.current_panel)
+
+    def create_analysis_panel(self):
+        self.clear_renderers()    
+        self.function_view = analysisview.AnalysisView(self.buttonPanel,Analysismodel.AnalysisModel(),self.vtk_renderer1,self.vtk_renderer2)
+        self.current_panel = self.function_view.create_edge(self.buttonPanel,self.current_panel)
 
 
     def clear_renderers(self):

@@ -93,3 +93,5 @@ def process_image_pair(img1, img2_path, output_path):
 #             print(f"Skipped: {filename} (No matching file in folder2)")
 
 # print("Processing completed.")
+
+

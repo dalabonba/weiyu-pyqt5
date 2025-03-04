@@ -1,7 +1,7 @@
 import vtk
 import os
 import math
-
+from . import trianglegoodbbox
 def load_3d_model(filename):
     _, extension = os.path.splitext(filename)
     extension = extension.lower()
@@ -58,16 +58,101 @@ def rotate_actor(actor, center, angle):
     transform.Translate(center[0], center[1], center[2])
     actor.SetUserTransform(transform)
 
+def setup_camera_with_obb(renderer, render_window, center2=None, lower_actor=None, upper_opacity=None, angle=0):
+    """
+    Set up a camera for rendering depth images using OBB bounds.
+
+    Parameters:
+        renderer: vtkRenderer object.
+        render_window: vtkRenderWindow object.
+        center1: Focal point of the camera (e.g., center of the model).
+        obb_bounds: Tuple containing OBB bounds (max_x, min_x, max_y, min_y, max_z, min_z).
+        center2: Optional second focal point.
+        upper_opacity: Optional opacity value for upper layers.
+        angle: Optional angle for additional camera adjustments.
+
+    Returns:
+        vtkImageShiftScale: Scaled depth image.
+    """
+
+    cam1 = renderer.GetActiveCamera()
+
+    # Camera position and clip values initialization
+    cam_position = [0.0, 0.0, 0.0]
+    polydata = lower_actor.GetMapper().GetInput()
+    obb_bounds=trianglegoodbbox.DentalModelReconstructor.compute_obb_aligned_bounds(polydata)
+    center1 =  (
+        (obb_bounds[0] + obb_bounds[1]) / 2.0,
+        (obb_bounds[2] + obb_bounds[3]) / 2.0,
+        (obb_bounds[4] + obb_bounds[5]) / 2.0,
+    )
 
 
-def setup_camera(renderer, render_window, center1, center2=None, lower_bound=None, upper_opacity=None, angle=0):
+    # Set focal point to center1
+    cam1.SetFocalPoint(center1)
+    # Enable parallel projection
+    cam1.SetParallelProjection(True)
+
+    # Get the camera position
+    cam_position = cam1.GetPosition()
+
+    # Calculate distances from camera to model centers
+    distance_cam_to_bb = math.sqrt(
+        (cam_position[0] - center1[0])**2 +
+        (cam_position[1] - center1[1])**2 +
+        (cam_position[2] - center1[2])**2
+    )
+
+    # Extract bounds from OBB
+
+    # Calculate near and far clipping planes
+    near = distance_cam_to_bb - ((obb_bounds[4] -  obb_bounds[5]) * 0.5)
+    far = distance_cam_to_bb + ((obb_bounds[4] -  obb_bounds[5]) * 0.5)
+
+    # Set the parallel scale based on Y bounding box values
+    cam1.SetParallelScale((obb_bounds[2] - obb_bounds[3]) * 0.5)
+
+    # Set the clipping range based on conditions
+    if angle != 0:
+        cam1.SetClippingRange(near, far - ((far - near) * 0.5))
+    elif upper_opacity is not None and center2 is not None:
+        distance_cam_to_bb_up = math.sqrt(
+            (cam_position[0] - center2[0])**2 +
+            (cam_position[1] - center2[1])**2 +
+            (cam_position[2] - center2[2])**2
+        )
+        gap_and_down = distance_cam_to_bb - distance_cam_to_bb_up
+
+        cam1.SetClippingRange(near - gap_and_down, far)
+    else:
+        cam1.SetClippingRange(near, far)
+
+    # Set the active camera for the renderer
+    renderer.SetActiveCamera(cam1)
+
+    # Create vtkWindowToImageFilter to get the depth image from the render window
+    depth_image_filter = vtk.vtkWindowToImageFilter()
+    depth_image_filter.SetInput(render_window)
+    depth_image_filter.SetInputBufferTypeToZBuffer()
+
+    # Create vtkImageShiftScale to map depth values to the 0-255 range
+    scale_filter = vtk.vtkImageShiftScale()
+    scale_filter.SetInputConnection(depth_image_filter.GetOutputPort())
+    scale_filter.SetOutputScalarTypeToUnsignedChar()
+    scale_filter.SetShift(-1)
+    scale_filter.SetScale(-255)
+
+    return scale_filter
+
+def setup_camera(renderer, render_window, center2=None, lower_actor=None, upper_opacity=None, angle=0):
     
     # Get the active camera from the renderer
     cam1 = renderer.GetActiveCamera()
 
     # Camera position and clip values initialization
     cam_position = [0.0, 0.0, 0.0]
-
+    center1=calculate_center(lower_actor)
+    lower_bound = lower_actor.GetBounds()
     # Set focal point to center1
     cam1.SetFocalPoint(center1)
 
@@ -107,7 +192,7 @@ def setup_camera(renderer, render_window, center1, center2=None, lower_bound=Non
     else:
         # 這邊設置牙冠深淺  
         # cam1.SetClippingRange(near, far-(far-near)*0.2)
-        cam1.SetClippingRange(near, far)
+        cam1.SetClippingRange(near-2.0, far)
 
 
     # # Set the active camera for the renderer
@@ -182,6 +267,11 @@ def render_file_in_second_window(render2, file_path):
         mapper.SetInputConnection(reader.GetOutputPort())
         actor = vtk.vtkActor()
         actor.SetMapper(mapper)
+    actor.GetProperty().SetColor((0.98, 0.98, 0.92))
+    actor.GetProperty().SetSpecular(1.0)  # 增加高光
+    actor.GetProperty().SetSpecularPower(20)  # 讓光澤更集中
+    actor.GetProperty().SetDiffuse(0.6)  # 光線柔和散射
+    actor.GetProperty().SetAmbient(0.3)  # 提高環境光影響
 
     # Clear any previous rendering in vtk_renderer2
     render2.RemoveAllViewProps()

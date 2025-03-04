@@ -32,6 +32,6 @@ class RemeshModel(BaseModel):
             image_file_cleaned = self.image_file.strip("' ").strip()
             base_name = os.path.splitext(os.path.basename(image_file_cleaned))[0]
             output_stl_path = self.output_folder+'/'+base_name+".stl"
-            trianglegood.process_image_to_stl(self.image_file,output_stl_path,self.reference_file)
+            trianglegood.DentalModelReconstructor(self.image_file,self.reference_file,output_stl_path).reconstruct()
             readmodel.render_file_in_second_window(render2,output_stl_path)
         return True

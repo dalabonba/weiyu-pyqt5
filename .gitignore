@@ -6,7 +6,7 @@ __pycache__/
 DAIS0104goodbesidewgan/
 # C extensions
 *.so
-
+*.stl
 # Distribution / packaging
 .Python
 build/

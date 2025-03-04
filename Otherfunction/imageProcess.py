@@ -1,5 +1,5 @@
 from PIL import Image
-
+import os
 
 def calculate_image_difference(image1, image2, output_image_path=None):
     image1 = Image.open(image1)
@@ -26,11 +26,11 @@ def calculate_image_difference(image1, image2, output_image_path=None):
 
     return new_image
 # # 資料夾路徑
-# folder_path1 = "D:/Users/user/Desktop/papergan/paper/crown/traincode/Prep/"
-# folder_path2 = "D:/Users/user/Desktop/papergan/paper/crown/traincode/Up/"
+# folder_path1 = "D:/Users/user/Desktop/weiyundontdelete/GANdata/trainingdepth/DAISdepth/alldata/depthfordifferentr/DCPRdepth/r=0/Prepfill/"
+# folder_path2 = "D:/Users/user/Desktop/weiyundontdelete/GANdata/trainingdepth/DAISdepth/alldata/depthfordifferentr/DCPRdepth/r=0/up/"
 
 # # 輸出資料夾
-# output_folder =  "D:/Users/user/Desktop/papergan/paper/crown/traincode/combineimage/"
+# output_folder =  "D:/Users/user/Desktop/weiyundontdelete/GANdata/trainingdepth/DAISdepth/alldata/depthfordifferentr/DCPRdepth/r=0/combineimage1"
 
 # # 確保輸出資料夾存在
 # if not os.path.exists(output_folder):
