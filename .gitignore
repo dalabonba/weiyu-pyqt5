@@ -7,6 +7,8 @@ DAIS0104goodbesidewgan/
 # C extensions
 *.so
 *.stl
+r=2/
+
 # Distribution / packaging
 .Python
 build/
