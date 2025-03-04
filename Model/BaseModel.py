@@ -48,7 +48,7 @@ class BaseModel(QObject):
                 if self.upper_file != '':
                     self.model1 = readmodel.load_3d_model(self.upper_file)
                     self.upper_actor = readmodel.create_actor(self.model1, (0.98, 0.98, 0.92)) 
-                    self.upper_actor.GetProperty().SetSpecular(1.0)  # 增加高光
+                    self.upper_actor.GetProperty().SetSpecular(0.5)  # 增加高光
                     self.upper_actor.GetProperty().SetSpecularPower(20)  # 讓光澤更集中
                     self.upper_actor.GetProperty().SetDiffuse(0.6)  # 光線柔和散射
                     self.upper_actor.GetProperty().SetAmbient(0.3)  # 提高環境光影響
@@ -60,7 +60,7 @@ class BaseModel(QObject):
                 # self.lower_actor = readmodel.create_actor(self.model2, (0.95, 0.95, 0.88))  # 設為白色
                 self.lower_actor = readmodel.create_actor(self.model2, (0.98, 0.98, 0.92))  # 更明亮的白色
                 self.lower_actor.GetProperty().SetOpacity(self.lower_opacity)
-                self.lower_actor.GetProperty().SetSpecular(1.0)  # 增加高光
+                self.lower_actor.GetProperty().SetSpecular(0.5)  # 增加高光
                 self.lower_actor.GetProperty().SetSpecularPower(20)  # 讓光澤更集中
                 self.lower_actor.GetProperty().SetDiffuse(0.6)  # 光線柔和散射
                 self.lower_actor.GetProperty().SetAmbient(0.3)  # 提高環境光影響

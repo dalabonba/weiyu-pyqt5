@@ -268,10 +268,10 @@ def render_file_in_second_window(render2, file_path):
         actor = vtk.vtkActor()
         actor.SetMapper(mapper)
     actor.GetProperty().SetColor((0.98, 0.98, 0.92))
-    actor.GetProperty().SetSpecular(1.0)  # 增加高光
-    actor.GetProperty().SetSpecularPower(20)  # 讓光澤更集中
+    actor.GetProperty().SetSpecular(0.5)  # 增加高光
+    actor.GetProperty().SetSpecularPower(10)  # 讓光澤更集中
     actor.GetProperty().SetDiffuse(0.6)  # 光線柔和散射
-    actor.GetProperty().SetAmbient(0.3)  # 提高環境光影響
+    actor.GetProperty().SetAmbient(0.1)  # 提高環境光影響
 
     # Clear any previous rendering in vtk_renderer2
     render2.RemoveAllViewProps()

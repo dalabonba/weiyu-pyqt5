@@ -3,8 +3,8 @@ from PyQt5.QtWidgets import (QMainWindow, QVBoxLayout, QHBoxLayout, QPushButton,
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
 import vtkmodules.all as vtk
 from . import (singledepthview, mutipledepthview,mutipledepthview,aipredictview,
-               edgeview,remeshview,stitchview,analysisview)
-from Model import Singledepthmodel,Mutipledepthmodel,Edgemodel,Aipredictmodel,Remeshmodel,Analysismodel
+               edgeview,remeshview,stitchview,analysisview,icpview)
+from Model import Singledepthmodel,Mutipledepthmodel,Edgemodel,Aipredictmodel,Remeshmodel,Analysismodel,ICPmodel
 
 
 class View(QMainWindow):
@@ -36,6 +36,7 @@ class View(QMainWindow):
             "mutiple_depthButton": "多次創建深度圖",
             "edgeButton": "獲得牙齒邊界線圖",
             "predictButton": "AI預測",
+            "icpButton": "ICP模型對齊",
             "reconstructButton": "3D模型重建",
             "stitchButton": "3D縫合網格",
             "analysisButton": "2D圖像遮罩區域分析",
@@ -93,6 +94,7 @@ class View(QMainWindow):
         self.mutiple_depthButton.clicked.connect(lambda: self.create_multiple_depth_panel())
         self.edgeButton.clicked.connect(lambda: self.create_edge_panel())
         self.predictButton.clicked.connect(lambda: self.create_predict_panel())
+        self.icpButton.clicked.connect(lambda: self.create_icp_panel())
         self.reconstructButton.clicked.connect(lambda: self.create_reconstruct_panel())
         self.stitchButton.clicked.connect(lambda: self.create_stitch_panel())
         self.analysisButton.clicked.connect(lambda: self.create_analysis_panel())
@@ -122,7 +124,11 @@ class View(QMainWindow):
         self.clear_renderers()    
         self.function_view = aipredictview.AimodelView(self.buttonPanel,Aipredictmodel.AipredictModel(),self.vtkWidget1,self.vtk_renderer1,self.vtk_renderer2)
         self.current_panel = self.function_view.create_predict(self.buttonPanel,self.current_panel)
-
+    def create_icp_panel(self):
+        # Create panel for ICP model alignment
+        self.clear_renderers()    
+        self.function_view = icpview.ICPView(self.buttonPanel,ICPmodel.ICPModel(),self.vtkWidget1,self.vtk_renderer1,self.vtk_renderer2)
+        self.current_panel = self.function_view.create_predict(self.buttonPanel,self.current_panel)
     def create_reconstruct_panel(self):
         self.clear_renderers()    
         self.function_view = remeshview.RemeshView(self.buttonPanel,Remeshmodel.RemeshModel(),self.vtk_renderer1,self.vtk_renderer2)

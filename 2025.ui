@@ -1,0 +1,373 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>N</class>
+ <widget class="QDialog" name="N">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1920</width>
+    <height>1080</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Dialog</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QDialog {
+    background-image: url(back.png);
+    background-repeat: no-repeat;
+    background-position: center;
+}</string>
+  </property>
+  <widget class="QLabel" name="logo">
+   <property name="geometry">
+    <rect>
+     <x>39</x>
+     <y>39</y>
+     <width>380</width>
+     <height>122</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>微軟正黑體</family>
+     <pointsize>16</pointsize>
+    </font>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">QLabel#logo {
+    background-color: white !important;
+    border-radius: 30px !important;
+    background-image: url(logo.png);  /* 加入圖片 */
+    background-repeat: no-repeat;  /* 防止重複 */
+    background-position: center;  /* 置中圖片 */
+    background-size: contain;  /* 讓圖片完整顯示，等比例縮放 */
+}</string>
+   </property>
+   <property name="text">
+    <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="btnLoad">
+   <property name="geometry">
+    <rect>
+     <x>1602</x>
+     <y>39</y>
+     <width>260</width>
+     <height>50</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>微軟正黑體</family>
+     <pointsize>24</pointsize>
+    </font>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">QPushButton#btnLoad {
+    background-color: white;  /* 預設背景白色 */
+    border-radius: 15px;  /* 圓角 */
+    padding: 0px 30px;  /* 內邊距確保不貼邊 */
+    text-align: center;  /* 讓 icon 和文字可以調整間距 */
+    qproperty-iconSize: 20px 20px;  /* 設定 icon 大小 */
+    
+    /* **加入陰影** */
+    
+}
+
+/* 讓 icon 置中 */
+QPushButton#btnLoad::icon {
+    qproperty-alignment: AlignCenter;
+}
+
+/* **滑鼠懸浮時，背景變灰色，陰影變強** */
+QPushButton#btnLoad:hover {
+    background-color: #e2e2e2;  /* 懸浮時的背景顏色 */
+    color: black;  /* 文字顏色保持不變 */
+    
+    /* **加強陰影** */
+    box-shadow: 4px 4px 12px rgba(0, 0, 0, 0.3);
+}
+</string>
+   </property>
+   <property name="locale">
+    <locale language="Chuvash" country="Russia"/>
+   </property>
+   <property name="text">
+    <string>PushButton</string>
+   </property>
+   <property name="icon">
+    <iconset>
+     <normaloff>load.svg</normaloff>load.svg</iconset>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>20</width>
+     <height>20</height>
+    </size>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="btnMapping">
+   <property name="geometry">
+    <rect>
+     <x>1640</x>
+     <y>110</y>
+     <width>221</width>
+     <height>50</height>
+    </rect>
+   </property>
+   <property name="font">
+    <font>
+     <family>微軟正黑體</family>
+     <pointsize>24</pointsize>
+    </font>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">QPushButton#btnMapping {
+    background-color: white;  /* 預設背景白色 */
+    border-radius: 25px;  /* 圓角 */
+    padding: 0px 30px;  /* 內邊距確保不貼邊 */
+    text-align: center;  /* 讓 icon 和文字可以調整間距 */
+    qproperty-iconSize: 20px 20px;  /* 設定 icon 大小 */
+}
+
+/* 讓 icon 置中 */
+QPushButton#btnMapping::icon {
+    qproperty-alignment: AlignCenter;
+}
+
+/* **滑鼠懸浮時，背景變灰色** */
+QPushButton#btnMapping:hover {
+    background-color: #e2e2e2;  /* 懸浮時的背景顏色 */
+    color: black;  /* 文字顏色保持不變 */
+}
+</string>
+   </property>
+   <property name="text">
+    <string>Mapping</string>
+   </property>
+   <property name="icon">
+    <iconset>
+     <normaloff>mapping.svg</normaloff>mapping.svg</iconset>
+   </property>
+   <property name="iconSize">
+    <size>
+     <width>20</width>
+     <height>20</height>
+    </size>
+   </property>
+  </widget>
+  <widget class="QWidget" name="back" native="true">
+   <property name="geometry">
+    <rect>
+     <x>39</x>
+     <y>200</y>
+     <width>1842</width>
+     <height>842</height>
+    </rect>
+   </property>
+   <property name="styleSheet">
+    <string notr="true">QWidget#back {
+    background-color: white;
+    border-radius: 25px;
+}
+</string>
+   </property>
+   <widget class="QPushButton" name="btnSix">
+    <property name="geometry">
+     <rect>
+      <x>930</x>
+      <y>20</y>
+      <width>491</width>
+      <height>50</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>微軟正黑體</family>
+      <pointsize>24</pointsize>
+      <weight>50</weight>
+      <bold>false</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton#btnSix {
+    background-color: white;  /* 初始背景白色 */
+    border: 2px solid #0d43f9;  /* 邊框顏色 */
+    border-radius: 15px;  /* 圓角 */
+    color: #0d43f9;  /* 初始字體顏色 */
+    padding: 0px 30px; 
+    text-align: center;
+}
+
+/* **滑鼠移上去時，字體變白色，背景變藍色** */
+QPushButton#btnSix:hover {
+    background-color: #0d43f9;  /* 背景變藍色 */
+    color: white;  /* 字體變白色 */
+}
+</string>
+    </property>
+    <property name="text">
+     <string>Calculate the six-zone area</string>
+    </property>
+    <property name="icon">
+     <iconset>
+      <normaloff>Calculate.svg</normaloff>Calculate.svg</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>20</width>
+      <height>20</height>
+     </size>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btnHSV">
+    <property name="geometry">
+     <rect>
+      <x>460</x>
+      <y>90</y>
+      <width>611</width>
+      <height>50</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>微軟正黑體</family>
+      <pointsize>24</pointsize>
+      <weight>50</weight>
+      <bold>false</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton#btnHSV {
+    background-color: white;  /* 初始背景白色 */
+    border: 2px solid #0d43f9;  /* 邊框顏色 */
+    border-radius: 15px;  /* 圓角 */
+    color: #0d43f9;  /* 初始字體顏色 */
+    padding: 0px 30px; 
+    text-align: center;
+}
+
+/* **滑鼠移上去時，字體變白色，背景變藍色** */
+QPushButton#btnHSV:hover {
+    background-color: #0d43f9;  /* 背景變藍色 */
+    color: white;  /* 字體變白色 */
+}
+</string>
+    </property>
+    <property name="text">
+     <string>HSV improves tooth segmentation</string>
+    </property>
+    <property name="icon">
+     <iconset>
+      <normaloff>segmentation.svg</normaloff>segmentation.svg</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>20</width>
+      <height>20</height>
+     </size>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btnDeep">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>30</y>
+      <width>611</width>
+      <height>50</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>微軟正黑體</family>
+      <pointsize>24</pointsize>
+      <weight>50</weight>
+      <bold>false</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton#btnDeep {
+    background-color: white;  /* 初始背景白色 */
+    border: 2px solid #0d43f9;  /* 邊框顏色 */
+    border-radius: 15px;  /* 圓角 */
+    color: #0d43f9;  /* 初始字體顏色 */
+    padding: 0px 30px; 
+    text-align: center;
+}
+
+/* **滑鼠移上去時，字體變白色，背景變藍色** */
+QPushButton#btnDeep:hover {
+    background-color: #0d43f9;  /* 背景變藍色 */
+    color: white;  /* 字體變白色 */
+}
+</string>
+    </property>
+    <property name="text">
+     <string>Deep learning tooth segmentation</string>
+    </property>
+    <property name="icon">
+     <iconset>
+      <normaloff>segmentation.svg</normaloff>segmentation.svg</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>20</width>
+      <height>20</height>
+     </size>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="btnIndex">
+    <property name="geometry">
+     <rect>
+      <x>1400</x>
+      <y>80</y>
+      <width>431</width>
+      <height>50</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>微軟正黑體</family>
+      <pointsize>24</pointsize>
+      <weight>50</weight>
+      <bold>false</bold>
+     </font>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QPushButton#btnIndex {
+    background-color: white;  /* 初始背景白色 */
+    border: 2px solid #0d43f9;  /* 邊框顏色 */
+    border-radius: 15px;  /* 圓角 */
+    color: #0d43f9;  /* 初始字體顏色 */
+    padding: 0px 30px; 
+    text-align: center;
+}
+
+/* **滑鼠移上去時，字體變白色，背景變藍色** */
+QPushButton#btnIndex:hover {
+    background-color: #0d43f9;  /* 背景變藍色 */
+    color: white;  /* 字體變白色 */
+}
+</string>
+    </property>
+    <property name="text">
+     <string>Calculate plaque index</string>
+    </property>
+    <property name="icon">
+     <iconset>
+      <normaloff>Calculate.svg</normaloff>Calculate.svg</iconset>
+    </property>
+    <property name="iconSize">
+     <size>
+      <width>20</width>
+      <height>20</height>
+     </size>
+    </property>
+   </widget>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

@@ -1,8 +1,8 @@
 import os
-from ICPgood import MultiwayRegistration
-from remesh import PointCloudReconstruction
+from .ICPgood import MultiwayRegistration
+from .remesh import PointCloudReconstruction
 
-def process_and_reconstruct(mesh_path1, mesh_path2, mesh_path3):
+def process_and_reconstruct(mesh_path1, mesh_path2, mesh_path3, output_dir="."):
 
 
     # 執行點雲配準
@@ -20,13 +20,12 @@ def process_and_reconstruct(mesh_path1, mesh_path2, mesh_path3):
     # 根據 mesh_path1 命名輸出檔案
     base_name = os.path.basename(mesh_path1)  # 獲取檔案名稱
     name_without_ext = os.path.splitext(base_name)[0]  # 去掉副檔名
-    output_filename = f"ICP_{name_without_ext}.stl"  # 加上前綴
-
+    output_filename1 = os.path.join(output_dir, f"ICP_{name_without_ext}.stl")  # 第一個輸出檔案
     # 儲存並顯示結果
-    reconstructor.save_mesh(output_filename)
-    reconstructor.visualize()
+    reconstructor.save_mesh(output_filename1)
+    # reconstructor.visualize()
     
-    print(f"重建完成，已儲存為: {output_filename}")
+    return output_filename1
 
 # 執行函式
 # process_and_reconstruct( "./0005/rebbox/redata0005bbox.stl","./0005/rebbox/redata0005bbox-90.stl","./0005/rebbox/redata0005bbox--90.stl")
