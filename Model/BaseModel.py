@@ -98,7 +98,26 @@ class BaseModel(QObject):
         # print(f"Saving depth map to {self.output_folder}")
         # In a real implementation, this method would actually save the depth map
         return output_file_path
-    
+    def save_more_depth_map(self,renderer):
+        renderer.GetRenderWindow().SetSize(256, 256)
+        upper_file_cleaned = self.upper_file.strip("' ").strip()
+        # Extract the file name without the extension from self.upper_file
+        base_name = os.path.splitext(os.path.basename(upper_file_cleaned))[0]
+        # Create the output file path
+        if self.upper_opacity == 1 :
+            output_file_path = self.output_folder+'/'+base_name+"_up.png"
+            self.upper_center = readmodel.calculate_center(self.upper_actor)
+            scale_filter=readmodel.setup_camera(renderer,renderer.GetRenderWindow()
+                            ,self.upper_center,self.lower_actor,self.upper_opacity,self.angle)
+        else:
+            output_file_path = self.output_folder+'/'+base_name+"_down.png"
+            scale_filter=readmodel.setup_camera(renderer,renderer.GetRenderWindow()
+                            ,None,self.lower_actor,self.upper_opacity,self.angle)
+
+        readmodel.save_depth_image(output_file_path,scale_filter)
+        bound=pictureedgblack.get_image_bound(output_file_path)
+        fillwhite.process_image_pair(bound,output_file_path,output_file_path)
+        return output_file_path
 
     def set_output_folder(self, folder_path):
         if os.path.isdir(folder_path):

@@ -8,6 +8,7 @@ DAIS0104goodbesidewgan/
 *.so
 *.stl
 r=2/
+r=2threepicture/
 
 # Distribution / packaging
 .Python

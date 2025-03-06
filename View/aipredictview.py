@@ -103,7 +103,7 @@ class AimodelView(BaseView):
                 self.model.lower_file = ""
                 self.model.lower_center = None
                 self.model.models_center = None
-            else:
+            elif hasattr(self.model, 'upper_actor') and self.model.upper_actor:
                 self.render_input.RemoveActor(self.model.upper_actor)
                 self.render_input.ResetCamera()
                 self.render_input.GetRenderWindow().Render()
