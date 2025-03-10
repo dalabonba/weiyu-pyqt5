@@ -47,8 +47,13 @@ def process_image(img_array, img1_array):
             result[y, start_x:end_x+1] = np.array([255, 0, 0])  # Blue bgr
     
     return result
+def ensure_png_extension(file_path):
+    return file_path if file_path.lower().endswith(".png") else file_path + ".png"
+
 
 def combine_image(input_image_path, input2_image_path, output_folder,downimage,upimage):
+    input_image_path = ensure_png_extension(input_image_path)
+    input2_image_path = ensure_png_extension(input2_image_path)
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
     output_image_path = os.path.join(output_folder, os.path.basename(input_image_path))

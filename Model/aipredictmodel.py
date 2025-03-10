@@ -1,8 +1,9 @@
 from PyQt5.QtCore import  pyqtSignal
 from .BaseModel import BaseModel
 import os
-from Otherfunction import readmodel,singleimgcolor,trianglegood
+from Otherfunction import readmodel,singleimgcolor,trianglegood,pictureedgblack,twopicturedege,combineABC
 import vtk
+from pathlib import Path
 
 class AipredictModel(BaseModel):
     model_updated = pyqtSignal()  # Define the signal at the class level
@@ -40,13 +41,15 @@ class AipredictModel(BaseModel):
     
     def save_ai_file(self,renderer,render2):
         image_file_cleaned = self.lower_file.strip("' ").strip()
+        upimage_file_cleaned = self.upper_file.strip("' ").strip()
+
         base_name = os.path.splitext(os.path.basename(image_file_cleaned))[0]
+        base_name_up = os.path.splitext(os.path.basename(upimage_file_cleaned))[0]
         renderer.ResetCamera()
         renderer.GetRenderWindow().Render()
         # self.model_updated.emit()
         renderer.GetRenderWindow().SetSize(256, 256)
-        self.SaveCurrentRenderWindowAsPLY(renderer,self.output_folder+base_name+"_modtify.ply")
-        self.lower_file = self.output_folder+base_name+"_modtify.ply"
+        self.lower_file_modify = self.output_folder+"/"+base_name+"_modtify.ply"
 
         # TODO  need to judge up and down , if up yes build three picture else build one picture
         if self.lower_file and  self.output_folder and  self.model_folder and self.upper_file:
@@ -59,19 +62,29 @@ class AipredictModel(BaseModel):
             self.upper_actor.GetProperty().SetOpacity(self.upper_opacity)
             self.lower_actor.GetProperty().SetOpacity(self.lower_opacity)
             output_file_path_up=self.save_more_depth_map(renderer)
-
-
+            pictureedgblack.mark_boundary_points(output_file_path_up,self.output_folder+"/edgeUp", color=(255, 255, 0))
+            pictureedgblack.mark_boundary_points(output_file_path_down,self.output_folder+"/edgeDown")
+            twopicturedege.combine_image(self.output_folder+"/edgeDown/"+base_name
+                                         , self.output_folder+"/edgeUp/"+base_name_up
+                                         , self.output_folder+"/combinetwoedge/"
+                                         ,output_file_path_down
+                                         ,output_file_path_up)
+            predictthree_pic=self.output_folder+"/predict.png"
+            combineABC.merge_images(output_file_path_down,output_file_path_up,self.output_folder+"/combinetwoedge/"+base_name+".png",predictthree_pic)
             output_file_path_ai = self.output_folder+'/ai_'+base_name+".png"
             # 再用gan產生ai的深度
-            singleimgcolor.apply_gan_model(self.model_folder, output_file_path_down, output_file_path_ai)
-            reference_ply = "D:/Weekly_Report/Thesis_Weekly_Report/paper/paper_Implementation/remesh/alldata_down"+f"/{base_name}.ply"
+            singleimgcolor.apply_gan_model(self.model_folder, predictthree_pic, output_file_path_ai)
+            # reference_ply = "D:/Weekly_Report/Thesis_Weekly_Report/paper/paper_Implementation/remesh/alldata_down"+f"/{base_name}.ply"
             output_stl_path = self.output_folder+'/ai_'+base_name+".stl"
+            self.upper_opacity = 0
+            self.lower_opacity = 1
+            self.upper_actor.GetProperty().SetOpacity(self.upper_opacity)
+            self.lower_actor.GetProperty().SetOpacity(self.lower_opacity)
             # 再用重建產生ai的深度
             reconstructor =trianglegood.DentalModelReconstructor(output_file_path_ai,self.lower_file,output_stl_path)
             reconstructor.reconstruct()
             smoothed_stl_path = self.output_folder + '/ai_' + base_name + "_smooth.stl"
             self.smooth_stl(output_stl_path, smoothed_stl_path)
-            
             readmodel.render_file_in_second_window(render2,smoothed_stl_path)
         elif self.lower_file and  self.output_folder and self.model_folder:
             self.upper_opacity = 0 
@@ -82,8 +95,9 @@ class AipredictModel(BaseModel):
             singleimgcolor.apply_gan_model(self.model_folder, output_file_path, output_file_path_ai)
             # reference_ply = "D:/Weekly_Report/Thesis_Weekly_Report/paper/paper_Implementation/remesh/alldata_down"+f"/{base_name}.ply"
             output_stl_path = self.output_folder+'/ai_'+base_name+".stl"
+            self.SaveCurrentRenderWindowAsPLY(renderer,self.lower_file_modify)
             # 再用重建產生ai的深度
-            reconstructor =trianglegood.DentalModelReconstructor(output_file_path_ai,self.lower_file,output_stl_path)
+            reconstructor =trianglegood.DentalModelReconstructor(output_file_path_ai,self.lower_file_modify,output_stl_path)
             reconstructor.reconstruct()
             smoothed_stl_path = self.output_folder + '/ai_' + base_name + "_smooth.stl"
             self.smooth_stl(output_stl_path, smoothed_stl_path)

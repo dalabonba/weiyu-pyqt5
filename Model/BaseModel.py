@@ -102,14 +102,15 @@ class BaseModel(QObject):
         upper_file_cleaned = self.upper_file.strip("' ").strip()
         # Extract the file name without the extension from self.upper_file
         base_name = os.path.splitext(os.path.basename(upper_file_cleaned))[0]
+        base_name = base_name[:-2]
         # Create the output file path
         if self.upper_opacity == 1 :
-            output_file_path = self.output_folder+'/'+base_name+"_up.png"
+            output_file_path = self.output_folder+'/'+base_name+"up.png"
             self.upper_center = readmodel.calculate_center(self.upper_actor)
             scale_filter=readmodel.setup_camera(renderer,renderer.GetRenderWindow()
                             ,self.upper_center,self.lower_actor,self.upper_opacity,self.angle)
         else:
-            output_file_path = self.output_folder+'/'+base_name+"_down.png"
+            output_file_path = self.output_folder+'/'+base_name+"down.png"
             scale_filter=readmodel.setup_camera(renderer,renderer.GetRenderWindow()
                             ,None,self.lower_actor,self.upper_opacity,self.angle)
 
