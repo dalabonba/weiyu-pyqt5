@@ -65,7 +65,7 @@ class BaseModel(QObject):
                 self.lower_actor.GetProperty().SetDiffuse(0.6)  # 光線柔和散射
                 self.lower_actor.GetProperty().SetAmbient(0.3)  # 提高環境光影響
                 renderer.AddActor(self.lower_actor)
-        if  self.lower_file and  hasattr(self, 'upper_actor'):
+        if  self.lower_file and  self.upper_actor != None:
             self.models_center = readmodel.twomodel_bound(self.lower_actor.GetBounds(),self.upper_actor.GetBounds())
         renderer.ResetCamera()
         renderer.GetRenderWindow().Render()
@@ -77,7 +77,6 @@ class BaseModel(QObject):
             upper_file_cleaned = self.lower_file.strip("' ").strip()
             # Extract the file name without the extension from self.upper_file
             base_name = os.path.splitext(os.path.basename(upper_file_cleaned))[0]
-            
             # Create the output file path
             output_file_path = self.output_folder+'/'+base_name+".png"
             if self.upper_opacity == 0 or not hasattr(self, 'upper_file'):

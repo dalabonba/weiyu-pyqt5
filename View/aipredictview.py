@@ -1,5 +1,5 @@
 # aipredictview.py
-from PyQt5.QtWidgets import QFrame,QGroupBox, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton
+from PyQt5.QtWidgets import QGroupBox, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton
 from .baseview import BaseView  
 from PyQt5.QtWidgets import QFileDialog
 import vtk
@@ -30,8 +30,6 @@ class AimodelView(BaseView):
         lower_layout, self.threeddown_file = self.create_file_selector(
         "下顎缺陷3D模型:", panel, "3D Model Files (*.ply *.stl *.obj)","down"
         )
-        layout.addLayout(lower_layout)
-
         upper_layout, self.threedupper_file = self.create_file_selector(
         "上顎3D模型:", panel, "3D Model Files (*.ply *.stl *.obj)","up"
         )
@@ -96,14 +94,14 @@ class AimodelView(BaseView):
                 if any(file_path.lower().endswith(ext) for ext in ['.ply', '.stl', '.obj']):
                     self.model.set_reference_file(file_path,position_type)
         else:
-            if  hasattr(self.model, 'lower_actor') and self.model.lower_actor:
+            if  self.model.lower_actor:
                 self.render_input.RemoveActor(self.model.lower_actor)
                 self.render_input.ResetCamera()
                 self.render_input.GetRenderWindow().Render()
                 self.model.lower_file = ""
                 self.model.lower_center = None
                 self.model.models_center = None
-            elif hasattr(self.model, 'upper_actor') and self.model.upper_actor:
+            if  self.model.upper_actor:
                 self.render_input.RemoveActor(self.model.upper_actor)
                 self.render_input.ResetCamera()
                 self.render_input.GetRenderWindow().Render()

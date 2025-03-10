@@ -12,6 +12,8 @@ class AipredictModel(BaseModel):
         self.model_folder = ""
         self.upper_file = ""
         self.lower_file = ""
+        self.lower_actor = None
+        self.upper_actor = None
         self.upper_opacity = 1.0
         self.lower_opacity = 1.0
         self.output_folder = ""
@@ -45,10 +47,11 @@ class AipredictModel(BaseModel):
         renderer.GetRenderWindow().SetSize(256, 256)
         self.SaveCurrentRenderWindowAsPLY(renderer,self.output_folder+base_name+"_modtify.ply")
         self.lower_file = self.output_folder+base_name+"_modtify.ply"
-        self.upper_opacity = 0 
-        self.upper_actor.GetProperty().SetOpacity(self.upper_opacity)
+
         # TODO  need to judge up and down , if up yes build three picture else build one picture
         if self.lower_file and  self.output_folder and  self.model_folder and self.upper_file:
+            self.upper_opacity = 0 
+            self.upper_actor.GetProperty().SetOpacity(self.upper_opacity)
             # 這邊先打編輯後的深度圖
             output_file_path_down=self.save_more_depth_map(renderer)
             self.upper_opacity = 1
@@ -60,8 +63,8 @@ class AipredictModel(BaseModel):
 
             output_file_path_ai = self.output_folder+'/ai_'+base_name+".png"
             # 再用gan產生ai的深度
-            singleimgcolor.apply_gan_model(self.model_folder, output_file_path, output_file_path_ai)
-            # reference_ply = "D:/Weekly_Report/Thesis_Weekly_Report/paper/paper_Implementation/remesh/alldata_down"+f"/{base_name}.ply"
+            singleimgcolor.apply_gan_model(self.model_folder, output_file_path_down, output_file_path_ai)
+            reference_ply = "D:/Weekly_Report/Thesis_Weekly_Report/paper/paper_Implementation/remesh/alldata_down"+f"/{base_name}.ply"
             output_stl_path = self.output_folder+'/ai_'+base_name+".stl"
             # 再用重建產生ai的深度
             reconstructor =trianglegood.DentalModelReconstructor(output_file_path_ai,self.lower_file,output_stl_path)
@@ -71,6 +74,7 @@ class AipredictModel(BaseModel):
             
             readmodel.render_file_in_second_window(render2,smoothed_stl_path)
         elif self.lower_file and  self.output_folder and self.model_folder:
+            self.upper_opacity = 0 
             # 這邊先打編輯後的深度圖
             output_file_path=self.save_depth_map(renderer)
             output_file_path_ai = self.output_folder+'/ai_'+base_name+".png"
@@ -85,7 +89,7 @@ class AipredictModel(BaseModel):
             self.smooth_stl(output_stl_path, smoothed_stl_path)
             
             readmodel.render_file_in_second_window(render2,smoothed_stl_path)
-        # self.model_updated.emit()
+        self.model_updated.emit()
         renderer.GetRenderWindow().SetSize(768, 768)
         
         return True
