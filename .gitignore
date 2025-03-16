@@ -11,6 +11,7 @@ DAIS0104goodbesidewgan/
 *.png
 r=2/
 r=2threepicture/
+dcprallcheck/
 
 # Distribution / packaging
 .Python

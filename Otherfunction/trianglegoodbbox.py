@@ -72,16 +72,19 @@ class DentalModelReconstructor:
                 min_values[max_diff_index] = min(point[max_diff_index], min_values[max_diff_index])
         
         return max_values[0],min_values[0],max_values[1],min_values[1],max_values[2],min_values[2]
+    
     @staticmethod
     def compute_obb_aligned_bounds(polydata):
         """
-        計算 OBB 的邊界並對齊到 Z 軸。
-
+        計算 OBB 的邊界並對齊到世界坐標軸。
+        
         參數:
         polydata: vtkPolyData 對象，表示輸入的 3D 資料。
 
         返回:
-        各軸最大值與最小值: (max_x, min_x, max_y, min_y, max_z, min_z)
+        aligned_bounds: 對齊後的邊界框
+        rotation_matrix: 用於對齊的旋轉矩陣
+        obb_center: OBB 的中心點
         """
         # 檢查輸入資料是否有點
         if polydata.GetNumberOfPoints() == 0:
@@ -89,81 +92,53 @@ class DentalModelReconstructor:
 
         # 初始化 vtkOBBTree 物件以計算 OBB
         obb_tree = vtk.vtkOBBTree()
-        # 用於儲存 OBB 的角點和三個方向向量
         corner, max_vec, mid_vec, min_vec, size = [0.0]*3, [0.0]*3, [0.0]*3, [0.0]*3, [0.0]*3
-        # 計算 OBB 的數據
         obb_tree.ComputeOBB(polydata, corner, max_vec, mid_vec, min_vec, size)
 
-        # 轉換為 NumPy 陣列以便後續操作
+        # 轉換為 NumPy 陣列
         corner = np.array(corner)
         max_vec = np.array(max_vec)
         mid_vec = np.array(mid_vec)
         min_vec = np.array(min_vec)
 
-        # OBB 的基點（OBB 的一個角點）
-        base_point = corner
+        # 計算 OBB 中心
+        obb_center = corner + (max_vec + mid_vec + min_vec) / 2.0
 
-        # 建構 OBB 的其他三個關鍵點，分別沿著三個方向
-        points = np.array([
-        base_point, # 基點
-        base_point + max_vec, # 基點加上最大方向向量
-        base_point + mid_vec, # 基點加上中間方向向量
-        base_point + min_vec # 基點加上最小方向向量
-        ])
+        # (1) 計算旋轉矯正矩陣
+        # OBB 的主軸方向 (V1, V2, V3)
+        V1 = max_vec / np.linalg.norm(max_vec)  # 歸一化
+        V2 = mid_vec / np.linalg.norm(mid_vec)
+        V3 = min_vec / np.linalg.norm(min_vec)
 
-        # 計算目前的法向量（從基點到 max_vec 點的方向）
-        current_normal = points[1] - points[0]
-        current_normal /= np.linalg.norm(current_normal) # 單位化為單位向量
+        # 目標標準基向量
+        E1 = np.array([1, 0, 0])
+        E2 = np.array([0, 1, 0])
+        E3 = np.array([0, 0, 1])
 
-        # 目標法向量為 Z 軸 (0, 0, 1)
-        target_normal = np.array([0, 0, 1])
+        # 當前基向量矩陣 A 和目標基向量矩陣 B
+        A = np.column_stack((V1, V2, V3))  # OBB 的基向量矩陣
+        B = np.column_stack((E1, E2, E3))  # 世界坐標軸基向量矩陣
 
-        # 計算旋轉軸 (目前法向量和目標法向量的叉積)
-        rotation_axis = np.cross(current_normal, target_normal)
-        rotation_axis_norm = np.linalg.norm(rotation_axis) # 計算旋轉軸的模
+        # 計算旋轉矩陣 R，使得 R * A = B
+        # R = B * A^-1
+        rotation_matrix = B @ np.linalg.inv(A)
 
-        # 若旋轉軸模為 0，表示目前法向量已與 Z 軸平行
-        if rotation_axis_norm > 1e-6: # 防止數值問題
-            rotation_axis /= rotation_axis_norm # 單位化旋轉軸
+        # (2) 應用旋轉到模型
+        points = np.array(polydata.GetPoints().GetData())
+        points = points - obb_center  # 平移到原點
+        aligned_points = (rotation_matrix @ points.T).T  # 應用旋轉
+        aligned_points = aligned_points + obb_center  # 平移回原始位置
 
-        # 計算旋轉角度 (透過點積公式計算夾角)
-        cos_theta = np.dot(current_normal, target_normal) # 目前法向量與目標法向量的點積
-        theta = np.arccos(np.clip(cos_theta, -1.0, 1.0)) # 防止浮點數誤差超出 [-1, 1]
+        # 更新 polydata 的點
+        new_points = vtk.vtkPoints()
+        new_points.SetData(np_to_vtk(aligned_points))
+        polydata.SetPoints(new_points)
 
-        # 若需要旋轉（即法向量未與 Z 軸平行）
-        if rotation_axis_norm > 1e-6:
-            rotation = R.from_rotvec(theta * rotation_axis) # 使用旋轉軸和角度產生旋轉對象
-        else:
-            rotation = R.identity() # 不需要旋轉時，返回單位旋轉
+        # (3) 可選：計算對齊後的 AABB
+        aligned_bounds = polydata.GetBounds()  # 返回 (xmin, xmax, ymin, ymax, zmin, zmax)
 
-        # 應用程式旋轉到所有 OBB 的關鍵點
-        rotated_points = rotation.apply(points)
+        return aligned_bounds
 
-        # 額外資訊：計算旋轉後最長軸與 Z 軸的夾角
-        rotated_vectors = np.diff(rotated_points, axis=0) # 每個向量
-        lengths = np.linalg.norm(rotated_vectors, axis=1) # 每個向量的長度
-        longest_axis = rotated_vectors[np.argmax(lengths)] # 找出最長的軸向量
-        angle_with_z = np.arccos(np.dot(longest_axis, [0, 0, 1]) / np.linalg.norm(longest_axis)) # 計算與 Z 軸的夾角
-        print(f"最長軸與 Z 軸的角度: {np.degrees(angle_with_z)} 度")
-
-        # 計算旋轉後點的最小值和最大值，用於確定邊界
-        # 計算每個點與基點的軸向差距
-        # min_values, max_values = base_point.copy(), base_point.copy()
-        min_values = np.min(points, axis=0) # 各軸的最小值
-        max_values = np.max(points, axis=0) # 各軸的最大值
-
-        # 逐點檢查是否更新邊界值
-        for point in rotated_points:
-            diffs = np.abs(point - rotated_points[0]) # 計算與基點的差值
-            max_diff_index = np.argmax(diffs) # 找出差值最大的軸索引
-        if point[max_diff_index] > rotated_points[0][max_diff_index]: # 判斷是否需要更新最大值
-            max_values[max_diff_index] = max(point[max_diff_index], max_values[max_diff_index])
-        else: # 否則更新最小值
-            min_values[max_diff_index] = min(point[max_diff_index], min_values[max_diff_index])
-
-        # 返回各軸的最大值和最小值
-        return max_values[0], min_values[0], max_values[1], min_values[1], max_values[2], min_values[2]
-        
             
     def generate_point_cloud(self, occlusal_view=True, rotate_negative_90=False):
         """
@@ -213,6 +188,9 @@ class DentalModelReconstructor:
             min_z = max_z - (max_z - min_z) * 0.5
 
         # ======= 生成點雲 ========
+        min_x_value, max_x_value = 255, 0
+        max_value, min_value = 0, 255
+
         for y in reversed(range(height)):
             for x in reversed(range(width)):
                 gray_value = image.getpixel((x, y))
@@ -288,7 +266,14 @@ class DentalModelReconstructor:
         points = self.generate_point_cloud(True,False)
         self.generate_mesh(points)
 
-
+def np_to_vtk(np_array):
+    """將 NumPy 陣列轉換為 VTK 格式"""
+    vtk_array = vtk.vtkDoubleArray()
+    vtk_array.SetNumberOfComponents(3)
+    vtk_array.SetNumberOfTuples(np_array.shape[0])
+    for i, point in enumerate(np_array):
+        vtk_array.SetTuple3(i, point[0], point[1], point[2])
+    return vtk_array
 # # Define file paths
 # image_path = './0001/data0001.png'
 # ply_path = './0001/data0001.ply'
@@ -296,8 +281,6 @@ class DentalModelReconstructor:
 
 # image = Image.open(image_path).convert('L')
 # width, height = image.size
-min_x_value, max_x_value = 255, 0
-max_value, min_value = 0, 255
 
 # for y in range(height):
 #     for x in range(width):
