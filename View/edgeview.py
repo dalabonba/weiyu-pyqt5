@@ -1,6 +1,5 @@
 # singledepthview.py
-from PyQt5.QtWidgets import QGroupBox, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton, QSlider
-from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QGroupBox, QVBoxLayout, QHBoxLayout, QLineEdit, QPushButton
 from .baseview import BaseView  
 
 class ImageedgeView(BaseView):

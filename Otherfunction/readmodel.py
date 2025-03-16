@@ -92,6 +92,7 @@ def setup_camera_with_obb(renderer, render_window, center2=None, lower_actor=Non
 
     cam1.SetFocalPoint(center1)  # 設定焦點
     cam1.SetParallelProjection(True)  # 啟用平行投影
+    cam_position=cam1.GetPosition()
 
     # 計算相機與模型中心的距離
     distance_cam_to_bb = math.sqrt(
@@ -148,7 +149,7 @@ def setup_camera(renderer, render_window, center2=None, lower_actor=None, upper_
     lower_bound = lower_actor.GetBounds()
     cam1.SetFocalPoint(center1)
     cam1.SetParallelProjection(True)
-
+    cam_position=cam1.GetPosition()
     # 計算相機與模型中心的距離
     distance_cam_to_bb = math.sqrt(
         (cam_position[0] - center1[0])**2 +
