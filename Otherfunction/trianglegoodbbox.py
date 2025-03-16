@@ -7,7 +7,6 @@ import numpy as np
 from stl import mesh
 from PIL import Image
 import vtk
-from scipy.spatial.transform import Rotation as R
 
 
 class DentalModelReconstructor:
@@ -26,53 +25,7 @@ class DentalModelReconstructor:
         img_array = np.array(self.image)
         
         self.image = Image.fromarray(img_array)
-    # @staticmethod
-    def compute_obb_bounds(polydata):
         
-         # 讀取 PLY 檔案
-        # reader = vtk.vtkPLYReader()
-        # reader.SetFileName(ply_path)
-        # reader.Update()
-        # polydata = reader.GetOutput()
-
-        if polydata.GetNumberOfPoints() == 0:
-            raise ValueError("PLY 檔案中無點資料！")
-
-        # 計算 OBB
-        obb_tree = vtk.vtkOBBTree()
-        corner, max_vec, mid_vec, min_vec, size = [0.0]*3, [0.0]*3, [0.0]*3, [0.0]*3, [0.0]*3
-        obb_tree.ComputeOBB(polydata, corner, max_vec, mid_vec, min_vec, size)
-
-        # 計算每個點與基點的差距
-        corner = np.array(corner)
-        max_vec = np.array(max_vec)
-        mid_vec = np.array(mid_vec)
-        min_vec = np.array(min_vec)
-        
-        # 選擇一個基點 (selected_index)
-        base_point = corner
-
-        # 建立其餘三個正交點
-        points = np.array([
-            base_point,
-            base_point + max_vec,
-            base_point + mid_vec,
-            base_point + min_vec
-        ])
-
-        # 計算每個點與基點的軸向差距
-        min_values, max_values = base_point.copy(), base_point.copy()
-
-        for point in points:
-            diffs = np.abs(point - base_point)
-            max_diff_index = np.argmax(diffs)
-            if point[max_diff_index] > base_point[max_diff_index]:
-                max_values[max_diff_index] = max(point[max_diff_index], max_values[max_diff_index])
-            else: 
-                min_values[max_diff_index] = min(point[max_diff_index], min_values[max_diff_index])
-        
-        return max_values[0],min_values[0],max_values[1],min_values[1],max_values[2],min_values[2]
-    
     @staticmethod
     def compute_obb_aligned_bounds(polydata):
         """
@@ -136,6 +89,14 @@ class DentalModelReconstructor:
 
         # (3) 可選：計算對齊後的 AABB
         aligned_bounds = polydata.GetBounds()  # 返回 (xmin, xmax, ymin, ymax, zmin, zmax)
+
+
+        # 計算各軸方向長度
+        x_length = aligned_bounds[1] - aligned_bounds[0]
+        y_length = aligned_bounds[3] - aligned_bounds[2]
+        z_length = aligned_bounds[5] - aligned_bounds[4]
+
+        print(f"x_length: {x_length}, y_length: {y_length}, z_length: {z_length}")
 
         return aligned_bounds
 
@@ -274,24 +235,4 @@ def np_to_vtk(np_array):
     for i, point in enumerate(np_array):
         vtk_array.SetTuple3(i, point[0], point[1], point[2])
     return vtk_array
-# # Define file paths
-# image_path = './0001/data0001.png'
-# ply_path = './0001/data0001.ply'
-# stl_output_path = './0001/data0001bbox.stl'
 
-# image = Image.open(image_path).convert('L')
-# width, height = image.size
-
-# for y in range(height):
-#     for x in range(width):
-#         pixel_value = image.getpixel((x, y))
-#         max_value = max(max_value, pixel_value)
-#         min_value = min(min_value, pixel_value)
-#         if pixel_value != 0:
-#             min_x_value = min(min_x_value, x)
-#             max_x_value = max(max_x_value, x)
-# # Create an instance of the DentalModelReconstructor
-# reconstructor = DentalModelReconstructor(image_path, ply_path, stl_output_path)
-
-# # Call the reconstruct method to process the image and generate the STL file
-# reconstructor.reconstruct()
