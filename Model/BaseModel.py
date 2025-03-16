@@ -111,8 +111,8 @@ class BaseModel(QObject):  # 繼承 QObject 以支援 Qt 訊號槽機制
                 readmodel.save_depth_image(output_file_path, scale_filter)
                 
                 # 獲取圖像邊界並進行處理，將邊界內的區域填充為白色
-                bound = pictureedgblack.get_image_bound(output_file_path)
-                fillwhite.process_image_pair(bound, output_file_path, output_file_path)
+                bound_image = pictureedgblack.get_image_bound(output_file_path)
+                fillwhite.process_image_pair(bound_image, output_file_path, output_file_path)
             
             # 如果 upper_opacity 等於 1，設定上下層物件的透明度並處理深度圖
             elif self.upper_opacity == 1:
@@ -154,8 +154,8 @@ class BaseModel(QObject):  # 繼承 QObject 以支援 Qt 訊號槽機制
             scale_filter = readmodel.setup_camera(renderer, renderer.GetRenderWindow(), None, self.lower_actor, self.upper_opacity, self.angle)
 
         readmodel.save_depth_image(output_file_path, scale_filter)
-        bound = pictureedgblack.get_image_bound(output_file_path)
-        fillwhite.process_image_pair(bound, output_file_path, output_file_path)
+        bound_image = pictureedgblack.get_image_bound(output_file_path)
+        fillwhite.process_image_pair(bound_image, output_file_path, output_file_path)
         return output_file_path
 
     # 設定輸出深度圖的儲存資料夾

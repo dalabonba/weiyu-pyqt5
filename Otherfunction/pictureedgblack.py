@@ -10,7 +10,7 @@ from scipy.ndimage import convolve
 
 
 
-
+# 這邊就是找一張圖的邊界，並且填充color的紅色邊界線
 def get_image_bound(input_image_path, color=(255, 0, 0)):
     # 打開圖像並轉換為灰階
     img = Image.open(input_image_path).convert('L')
@@ -42,43 +42,41 @@ def get_image_bound(input_image_path, color=(255, 0, 0)):
     
     return boundary_img
 
-
-
 def mark_boundary_points(input_image_path, output_folder, color=(255, 0, 0)):
-    # 打开图像
+    # 開啟影像
     img = Image.open(input_image_path)
-    
-    # 确保图像是8位深度的灰阶图像
+
+    # 確保影像是8位元深度的灰階影像
     if img.mode != 'L':
         img = img.convert('L')
-    
-    # 将图像转换为 numpy 数组
+
+    # 將影像轉換為 numpy 陣列
     img_array = np.array(img)
-    
-    # 创建一个新的 RGB 图像用于标记边界点
+
+    # 建立一個新的 RGB 映像用於標記邊界點
     boundary_img_array = np.zeros((img_array.shape[0], img_array.shape[1], 3), dtype=np.uint8)
-    
-    # 创建一个掩码来标记边界点
+
+    # 建立一個遮罩來標記邊界點
     boundary_mask = np.zeros_like(img_array, dtype=bool)
-    
-    # 标记所有非零像素点
+
+    # 標記所有非零像素點
     non_zero_mask = img_array > 0
-    
-    # 使用卷积核来标记边界点
+
+    # 使用卷積核來標記邊界點
     kernel = np.array([[0, 1, 0], [1, -4, 1], [0, 1, 0]], dtype=np.float32)
     edge_mask = convolve(non_zero_mask.astype(float), kernel, mode='constant', cval=0.0) != 0
-    
-    # 更新边界掩码
+
+    # 更新邊界掩碼
     boundary_mask[edge_mask] = True
-    
-    # 将边界掩码应用于边界图像数组
+
+    # 將邊界遮罩應用於邊界影像數組
     boundary_img_array[boundary_mask] = color
-    
-    # 将 numpy 数组转换回图像
+
+    # 將 numpy 陣列轉換回影像
     boundary_img = Image.fromarray(boundary_img_array)
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
-    # 创建输出文件路径
+    # 建立輸出檔案路徑
     output_image_path = os.path.join(output_folder, os.path.basename(input_image_path))
     boundary_img.save(output_image_path)
 

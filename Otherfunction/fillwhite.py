@@ -1,72 +1,55 @@
 import cv2
 import numpy as np
 
+# 定義一個函數，用於處理一對影像，其中第一張影像包含紅色邊框，第二張影像是深度圖像
+# 這個函數將從第二張影像中提取邊框，並將其填充為白色，同時保留原始深度值
+# 最後，將處理後的影像保存到指定的路徑
+# 因為原本的深度圖 在白色區域內有些會有破洞 透過邊框內方式填滿255
 def process_image_pair(img1, img2_path, output_path):
-    img1=cv2.cvtColor(np.array(img1), cv2.COLOR_RGB2BGR)
-    # 讀取第一個影像
-    # img1 = cv2.imread(img1, cv2.COLOR_RGB2BGR)
-
-    # 讀取第二個影像
+    # 將第一張影像從 RGB 轉換為 BGR 格式
+    img1 = cv2.cvtColor(np.array(img1), cv2.COLOR_RGB2BGR)
+    
+    # 讀取第二張影像，將其轉為灰階
     img2 = cv2.imread(img2_path, cv2.IMREAD_GRAYSCALE)
 
-    # 提取第二個影像的紅色通道並二值化以獲得邊框
+    # 提取第二張影像的紅色通道，並進行二值化，將邊框部分設為白色（255），其餘部分為黑色（0）
     _, binary_mask = cv2.threshold(img2, 1, 255, cv2.THRESH_BINARY)
 
-    # 找到邊框的輪廓
+    # 根據二值化的邊框，找到輪廓
     contours, _ = cv2.findContours(binary_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-    # 建立一個遮罩圖像
+    # 創建一個與 img2 同大小的空白遮罩圖像
     mask = np.zeros(img2.shape, dtype=np.uint8)
 
-    # 在遮罩上繪製填滿的輪廓
+    # 在遮罩上繪製所有的輪廓，並將輪廓內部填滿（255表示白色）
     cv2.drawContours(mask, contours, -1, (255), thickness=cv2.FILLED)
 
-    # 在邊框內尋找深度值為0的像素並將其改為255
+    # 將原始影像 (img2) 複製一份，並對遮罩內的深度值為0的像素設為255
     result = img2.copy()
     result[(mask > 0) & (img2 == 0)] = 255
-
-
-    # 找到從小於220變為255的位置
+    
+    # 處理圖像中某些區域的像素，使得那些從小於220變為255，再從255變回小於220的區間內的像素被重置為0。
+    # 這通常用於去除某些圖像中的小區域，圖像邊緣或不需要的干擾部分。
+    # 找出從像素值小於220變為255的位置（起點）
     start_positions = (result[:, :-1] < 220) & (result[:, 1:] == 255)
+    
+    # 找出從像素值為255變為小於220的位置（終點）
     end_positions = (result[:, :-1] == 255) & (result[:, 1:] < 220)
 
-    # 遍歷每一行並將找到的區間設為0
+    # 遍歷每一行，將找到的區間（從小於220變為255）設為0
     for row in range(result.shape[0]):
+        # 找到該行中的起點和終點位置
         starts = np.where(start_positions[row])[0]
         ends = np.where(end_positions[row])[0]
 
-        # 保證開始位置和結束位置的數量一致
+        # 確保每行的起點和終點數量一致
         if len(starts) == len(ends):
             for start, end in zip(starts, ends):
-                result[row, start:end+1] = 0  # 將區間內的值設為0
+                # 將起點和終點之間的區間內的像素值設為0
+                result[row, start:end+1] = 0
+
+    # 儲存處理後的影像到指定路徑
     cv2.imwrite(output_path, result)
-
-    #     # 獲取 result 圖像的高度和寬度
-    # height, width = result.shape
-
-    # # 使用 for 循環遍歷圖像的每一行。
-    # for row in range(height):
-    #     above_threshold = False  # 用於標識當前行是否已經進入高於150的區域
-    #     start = -1  # 記錄高於150的起始位置
-
-    #     # 使用 for 循環遍歷當前行的每一列。
-    #     for col in range(width - 1):  # 減去1以避免越界
-    #         # 如果當前像素值大於150且下一個像素為0
-    #         if result[row, col]< 220 and result[row, col + 1] == 255:
-    #             if not above_threshold:  # 是否已進入高於240的區域
-    #                 above_threshold = True
-    #                 start = col  # 記錄起始位置
-
-    #         elif result[row, col] == 255 and above_threshold:  # 檢查深度值是否為0
-    #             if start != -1:  # 檢查起始點的有效性
-    #                 # 尋找終點
-    #                 for next_col in range(col + 1, width):
-    #                     if result[row, next_col] < 220:  # 檢查深度值是否高於240
-    #                         end = next_col  # 記錄終點
-    #                         # 填充區間
-    #                         result[row, start:end] = np.where(result[row, start:end] == 255, 0, result[row, start:end])
-    #                         break  # 找到終點後，退出尋找終點的循環
-    #             break  # 找到一對起點和終點後，退出當前行的循環。
 
 #     # 保存結果
 # folder1 = 'D:/Weekly_Report/Thesis_Weekly_Report/paper/paper_Implementation/remesh/c++bug/Downred/' # 包含第一張圖（紅色邊框）的資料夾
