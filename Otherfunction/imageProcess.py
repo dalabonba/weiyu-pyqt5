@@ -1,5 +1,4 @@
 from PIL import Image
-import os
 
 def calculate_image_difference(image1, image2, output_image_path=None):
     image1 = Image.open(image1)

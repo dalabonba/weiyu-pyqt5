@@ -1,6 +1,5 @@
 import cv2
 import numpy as np
-import os
 
 def process_image_pair(img1, img2_path, output_path):
     img1=cv2.cvtColor(np.array(img1), cv2.COLOR_RGB2BGR)

@@ -10,7 +10,6 @@ class ICPView(BaseView):
         self.model = model
         self.render_widget = render_widget
         self.interactor = self.render_widget.GetRenderWindow().GetInteractor()
-        self.detect_redownmodel = False
         model.model_updated.connect(self.update_view)
         self.area_picker = vtk.vtkAreaPicker()
         self.render_widget.SetPicker(self.area_picker)

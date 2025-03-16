@@ -1,9 +1,8 @@
-# aipredictview.py
 from PyQt5.QtWidgets import QGroupBox, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton
 from .baseview import BaseView  
 from PyQt5.QtWidgets import QFileDialog
 import vtk
-from forvtk import forvtkinteractor
+from Selectmodel import forvtkinteractor
 
 class AimodelView(BaseView):
     def __init__(self, parent_layout, model,render_widget, renderinput,renderinput2):
@@ -11,7 +10,6 @@ class AimodelView(BaseView):
         self.model = model
         self.render_widget = render_widget
         self.interactor = self.render_widget.GetRenderWindow().GetInteractor()
-        self.detect_redownmodel = False
         model.model_updated.connect(self.update_view)
         self.area_picker = vtk.vtkAreaPicker()
         self.render_widget.SetPicker(self.area_picker)

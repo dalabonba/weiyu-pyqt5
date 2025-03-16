@@ -122,7 +122,7 @@ class SingleDepthView(BaseView):
     def save_depth_single_map(self):
             output_file_path=self.model.save_depth_map(self.render_input)
             readmodel.render_file_in_second_window(self.render_input2,output_file_path)
-            self.model.reset(self.render_input2)
+            # self.model.reset(self.render_input2)
             print("Depth map saved successfully")
 
 

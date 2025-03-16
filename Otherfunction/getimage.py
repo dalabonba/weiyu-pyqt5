@@ -1,5 +1,4 @@
 import cv2
-# import os
 import numpy as np
 
 def apply_blue_mask(original_image_array, blue_mask_array,outdata_name):

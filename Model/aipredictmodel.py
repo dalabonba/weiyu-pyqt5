@@ -3,7 +3,6 @@ from .BaseModel import BaseModel
 import os
 from Otherfunction import readmodel,singleimgcolor,trianglegood,pictureedgblack,twopicturedege,combineABC
 import vtk
-from pathlib import Path
 
 class AipredictModel(BaseModel):
     model_updated = pyqtSignal()  # Define the signal at the class level
