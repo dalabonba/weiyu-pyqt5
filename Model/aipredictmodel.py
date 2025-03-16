@@ -55,12 +55,12 @@ class AipredictModel(BaseModel):
             self.upper_opacity = 0 
             self.upper_actor.GetProperty().SetOpacity(self.upper_opacity)
             # 這邊先打編輯後的深度圖
-            output_file_path_down=self.save_more_depth_map(renderer)
+            output_file_path_down=self.combine_three_depth(renderer)
             self.upper_opacity = 1
             self.lower_opacity = 0
             self.upper_actor.GetProperty().SetOpacity(self.upper_opacity)
             self.lower_actor.GetProperty().SetOpacity(self.lower_opacity)
-            output_file_path_up=self.save_more_depth_map(renderer)
+            output_file_path_up=self.combine_three_depth(renderer)
             pictureedgblack.mark_boundary_points(output_file_path_up,self.output_folder+"/edgeUp", color=(255, 255, 0))
             pictureedgblack.mark_boundary_points(output_file_path_down,self.output_folder+"/edgeDown")
             twopicturedege.combine_image(self.output_folder+"/edgeDown/"+base_name
