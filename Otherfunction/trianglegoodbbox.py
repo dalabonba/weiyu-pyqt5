@@ -27,7 +27,7 @@ class DentalModelReconstructor:
         self.image = Image.fromarray(img_array)
         
     @staticmethod
-    def compute_obb_aligned_bounds(polydata):
+    def compute_obb_aligned_bounds(polydata, upper_polydata=None):
         """
         計算 OBB 的邊界並對齊到世界坐標軸。
         
@@ -36,8 +36,6 @@ class DentalModelReconstructor:
 
         返回:
         aligned_bounds: 對齊後的邊界框
-        rotation_matrix: 用於對齊的旋轉矩陣
-        obb_center: OBB 的中心點
         """
         # 檢查輸入資料是否有點
         if polydata.GetNumberOfPoints() == 0:
@@ -59,18 +57,20 @@ class DentalModelReconstructor:
 
         # (1) 計算旋轉矯正矩陣
         # OBB 的主軸方向 (V1, V2, V3)
-        V1 = max_vec / np.linalg.norm(max_vec)  # 歸一化
-        V2 = mid_vec / np.linalg.norm(mid_vec)
-        V3 = min_vec / np.linalg.norm(min_vec)
-
+        sizes = np.array([np.linalg.norm(max_vec), np.linalg.norm(mid_vec), np.linalg.norm(min_vec)])
+        axis_order = np.argsort(sizes)[::-1]  # 從大到小排序
+        vectors = [max_vec, mid_vec, min_vec]
+        V1 = vectors[axis_order[0]] / np.linalg.norm(vectors[axis_order[0]])  # 最長軸
+        V2 = vectors[axis_order[1]] / np.linalg.norm(vectors[axis_order[1]])
+        V3 = vectors[axis_order[2]] / np.linalg.norm(vectors[axis_order[2]])
         # 目標標準基向量
         E1 = np.array([1, 0, 0])
         E2 = np.array([0, 1, 0])
         E3 = np.array([0, 0, 1])
 
         # 當前基向量矩陣 A 和目標基向量矩陣 B
-        A = np.column_stack((V1, V2, V3))  # OBB 的基向量矩陣
-        B = np.column_stack((E1, E2, E3))  # 世界坐標軸基向量矩陣
+        A = np.column_stack((V3, V2, V1))  # Z, Y, X
+        B = np.column_stack((E3, E2, E1))  # [0,0,1], [0,1,0], [1,0,0]
 
         # 計算旋轉矩陣 R，使得 R * A = B
         # R = B * A^-1
@@ -87,6 +87,16 @@ class DentalModelReconstructor:
         new_points.SetData(np_to_vtk(aligned_points))
         polydata.SetPoints(new_points)
 
+        # 如果提供了 upper_polydata，同步變換
+        if upper_polydata is not None:
+            upper_points = np.array(upper_polydata.GetPoints().GetData())
+            upper_points = upper_points - obb_center
+            aligned_upper_points = (rotation_matrix @ upper_points.T).T
+            aligned_upper_points = aligned_upper_points + obb_center
+            new_upper_points = vtk.vtkPoints()
+            new_upper_points.SetData(np_to_vtk(aligned_upper_points))
+            upper_polydata.SetPoints(new_upper_points)
+
         # (3) 可選：計算對齊後的 AABB
         aligned_bounds = polydata.GetBounds()  # 返回 (xmin, xmax, ymin, ymax, zmin, zmax)
 
@@ -96,7 +106,7 @@ class DentalModelReconstructor:
         y_length = aligned_bounds[3] - aligned_bounds[2]
         z_length = aligned_bounds[5] - aligned_bounds[4]
 
-        print(f"x_length: {x_length}, y_length: {y_length}, z_length: {z_length}")
+        # print(f"x_length: {x_length}, y_length: {y_length}, z_length: {z_length}")
 
         return aligned_bounds
 

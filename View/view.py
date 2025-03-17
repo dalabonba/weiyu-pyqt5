@@ -4,7 +4,7 @@ from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor 
 import vtkmodules.all as vtk  # 匯入所有 VTK 模組
 from . import (singledepthview, mutipledepthview, aipredictview,  # 匯入不同的視圖模組
                edgeview, remeshview, stitchview, analysisview, icpview)
-from Model import Singledepthmodel, Mutipledepthmodel, Edgemodel, Aipredictmodel, Remeshmodel, Analysismodel, ICPmodel  # 匯入不同的模型
+from Model import Singledepthmodel, Mutipledepthmodel, Edgemodel, Aipredictmodel, Remeshmodel, Analysismodel, ICPmodel,MutipleOBBdepthmodel  # 匯入不同的模型
 
 class View(QMainWindow):  # 定義主視圖類別，繼承自 QMainWindow
     def __init__(self, parent=None):
@@ -32,6 +32,7 @@ class View(QMainWindow):  # 定義主視圖類別，繼承自 QMainWindow
         self.buttons = {
             "depthButton": "單次創建深度圖",
             "mutiple_depthButton": "多次創建深度圖",
+            "mutiple_obb_depthButton": "多次obb創建深度圖",
             "edgeButton": "獲得牙齒邊界線圖",
             "predictButton": "AI預測",
             "icpButton": "ICP模型對齊",
@@ -81,6 +82,7 @@ class View(QMainWindow):  # 定義主視圖類別，繼承自 QMainWindow
     def connect_signals(self):  # 連接按鈕信號與對應函數
         self.depthButton.clicked.connect(lambda: self.create_depth_panel())
         self.mutiple_depthButton.clicked.connect(lambda: self.create_multiple_depth_panel())
+        self.mutiple_obb_depthButton.clicked.connect(lambda: self.create_obb_multiple_depth_panel())
         self.edgeButton.clicked.connect(lambda: self.create_edge_panel())
         self.predictButton.clicked.connect(lambda: self.create_predict_panel())
         self.icpButton.clicked.connect(lambda: self.create_icp_panel())
@@ -104,6 +106,14 @@ class View(QMainWindow):  # 定義主視圖類別，繼承自 QMainWindow
             self.buttonPanel, Mutipledepthmodel.BatchDepthModel(), self.vtk_renderer1, self.vtk_renderer2
         )
         self.current_panel = self.function_view.create_depth(self.buttonPanel, self.current_panel)
+
+    def create_obb_multiple_depth_panel(self):
+            """創建OBB多個深度視圖面板"""
+            self.clear_renderers()
+            self.function_view = mutipledepthview.MutipleDepthView(
+                self.buttonPanel, MutipleOBBdepthmodel.OBBBatchDepthModel(), self.vtk_renderer1, self.vtk_renderer2
+            )
+            self.current_panel = self.function_view.create_depth(self.buttonPanel, self.current_panel)
 
     def create_edge_panel(self):
         """創建邊緣檢測視圖面板"""
