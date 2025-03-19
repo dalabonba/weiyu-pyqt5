@@ -86,15 +86,15 @@ def setup_camera_with_obb(renderer, render_window,upper_actor, center2=None, low
     up_polydata = upper_actor.GetMapper().GetInput()  # 取得模型資料
 
     obb_bounds  = trianglegoodbbox.DentalModelReconstructor.compute_obb_aligned_bounds(polydata,up_polydata)  # 計算 OBB 邊界
-    writer = vtk.vtkPLYWriter()
-    writer.SetFileName("aligned_lower_model.ply")
-    writer.SetInputData(polydata)
-    writer.Write()
+    # writer = vtk.vtkPLYWriter()
+    # writer.SetFileName("aligned_lower_model.ply")
+    # writer.SetInputData(polydata)
+    # writer.Write()
 
-    if up_polydata is not None:
-        writer.SetFileName("aligned_upper_model.ply")
-        writer.SetInputData(up_polydata)
-        writer.Write()
+    # if up_polydata is not None:
+    #     writer.SetFileName("aligned_upper_model.ply")
+    #     writer.SetInputData(up_polydata)
+    #     writer.Write()
     center1 =  (
         (obb_bounds[0] + obb_bounds[1]) / 2.0,
         (obb_bounds[2] + obb_bounds[3]) / 2.0,
@@ -117,7 +117,7 @@ def setup_camera_with_obb(renderer, render_window,upper_actor, center2=None, low
     far = distance_cam_to_bb + ((obb_bounds[5] -  obb_bounds[4]) * 0.5)
 
     # 設定相機的平行比例
-    cam1.SetParallelScale((obb_bounds[1] - obb_bounds[0]) * 0.5)
+    cam1.SetParallelScale((obb_bounds[3] - obb_bounds[2]) * 0.5)
 
     # 根據角度或其他條件設置剪裁範圍
     if angle != 0:

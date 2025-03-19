@@ -9,6 +9,8 @@ DAIS0104goodbesidewgan/
 *.stl
 *.ply
 *.png
+*.zip
+*.7z
 r=2/
 r=2threepicture/
 dcprallcheck/

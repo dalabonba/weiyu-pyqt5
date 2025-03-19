@@ -74,9 +74,9 @@ class BaseModel(QObject):  # 繼承 QObject 以支援 Qt 訊號槽機制
                 self.lower_actor.GetProperty().SetAmbient(0.3)  # 提高環境光影響
                 renderer.AddActor(self.lower_actor)
 
-        # 若同時載入上、下顎模型，則計算模型中心點
-        if  hasattr(self, 'lower_actor') and  hasattr(self, 'upper_actor'):
-            self.models_center = readmodel.twomodel_bound(self.lower_actor.GetBounds(), self.upper_actor.GetBounds())
+        # # 若同時載入上、下顎模型，則計算模型中心點
+        # if  hasattr(self, 'lower_actor') and  hasattr(self, 'upper_actor'):
+        #     self.models_center = readmodel.twomodel_bound(self.lower_actor.GetBounds(), self.upper_actor.GetBounds())
 
         renderer.ResetCamera()  # 重置相機視角
         renderer.GetRenderWindow().Render()  # 重新渲染畫面
@@ -143,10 +143,10 @@ class BaseModel(QObject):  # 繼承 QObject 以支援 Qt 訊號槽機制
     # 儲存更多深度圖（處理上顎和下顎分開存檔）
     def combine_three_depth(self, renderer):
         renderer.GetRenderWindow().SetSize(256, 256)
-        base_name = os.path.splitext(os.path.basename(self.upper_file.strip("' ").strip()))[0][:-2]
+        base_name = os.path.splitext(os.path.basename(self.upper_file))[0]
 
         if self.upper_opacity == 1:
-            output_file_path = f"{self.output_folder}/{base_name}up.png"
+            output_file_path = f"{self.output_folder}/{base_name}.png"
             self.upper_center = readmodel.calculate_center(self.upper_actor)
             scale_filter = readmodel.setup_camera(renderer, renderer.GetRenderWindow(), self.upper_center, self.lower_actor, self.upper_opacity, self.angle)
         else:

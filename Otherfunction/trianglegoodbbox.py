@@ -57,23 +57,28 @@ class DentalModelReconstructor:
 
         # (1) 計算旋轉矯正矩陣
         # OBB 的主軸方向 (V1, V2, V3)
+        # 計算三個軸向量的長度 (向量的歐幾里得範數)
+        # (1) 計算旋轉矯正矩陣
+        # OBB 的主軸方向 (V1, V2, V3)
         sizes = np.array([np.linalg.norm(max_vec), np.linalg.norm(mid_vec), np.linalg.norm(min_vec)])
         axis_order = np.argsort(sizes)[::-1]  # 從大到小排序
         vectors = [max_vec, mid_vec, min_vec]
         V1 = vectors[axis_order[0]] / np.linalg.norm(vectors[axis_order[0]])  # 最長軸
-        V2 = vectors[axis_order[1]] / np.linalg.norm(vectors[axis_order[1]])
-        V3 = vectors[axis_order[2]] / np.linalg.norm(vectors[axis_order[2]])
-        # 目標標準基向量
-        E1 = np.array([1, 0, 0])
-        E2 = np.array([0, 1, 0])
-        E3 = np.array([0, 0, 1])
+        V2 = vectors[axis_order[1]] / np.linalg.norm(vectors[axis_order[1]])  # 次長軸
+        V3 = vectors[axis_order[2]] / np.linalg.norm(vectors[axis_order[2]])  # 最短軸
 
-        # 當前基向量矩陣 A 和目標基向量矩陣 B
-        A = np.column_stack((V3, V2, V1))  # Z, Y, X
-        B = np.column_stack((E3, E2, E1))  # [0,0,1], [0,1,0], [1,0,0]
+        # 目標標準基向量
+        E1 = np.array([1, 0, 0])  # X 軸
+        E2 = np.array([0, 1, 0])  # Y 軸
+        E3 = np.array([0, 0, 1])  # Z 軸
+
+        # 當前基向量矩陣 A (OBB 的原始基向量)
+        A = np.column_stack((V3, V2, V1))  # V3, V2, V1
+
+        # 目標基向量矩陣 B (將 V1 對齊到 Z 軸)
+        B = np.column_stack((E3, E1, E2))  # X, Y, Z (V3 -> X, V2 -> Y, V1 -> Z)
 
         # 計算旋轉矩陣 R，使得 R * A = B
-        # R = B * A^-1
         rotation_matrix = B @ np.linalg.inv(A)
 
         # (2) 應用旋轉到模型

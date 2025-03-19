@@ -56,7 +56,7 @@ def combine_image(input_image_path, input2_image_path, output_folder,downimage,u
     input2_image_path = ensure_png_extension(input2_image_path)
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
-    output_image_path = os.path.join(output_folder, os.path.basename(input_image_path))
+    output_image_path = os.path.join(output_folder, os.path.basename(input2_image_path))
     img = Image.open(input_image_path).convert('RGB')
     img1 = Image.open(input2_image_path).convert('RGB')
     img_array = np.array(img)
@@ -65,6 +65,7 @@ def combine_image(input_image_path, input2_image_path, output_folder,downimage,u
     blue_result_array = process_image(img_array, img1_array)
     # cv2.imwrite(output_image_path, blue_result_array)
     get_combine_data = calculate_image_difference(upimage,downimage)
+    # TODO: filter center 
     combine_image_array_np = np.array(get_combine_data)
     blue_image_array_np = np.array(blue_result_array)
     
