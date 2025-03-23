@@ -57,15 +57,34 @@ class DentalModelReconstructor:
 
         # (1) 計算旋轉矯正矩陣
         # OBB 的主軸方向 (V1, V2, V3)
-        # 計算三個軸向量的長度 (向量的歐幾里得範數)
-        # (1) 計算旋轉矯正矩陣
-        # OBB 的主軸方向 (V1, V2, V3)
+        # 根據軸長度排序
         sizes = np.array([np.linalg.norm(max_vec), np.linalg.norm(mid_vec), np.linalg.norm(min_vec)])
         axis_order = np.argsort(sizes)[::-1]  # 從大到小排序
         vectors = [max_vec, mid_vec, min_vec]
-        V1 = vectors[axis_order[0]] / np.linalg.norm(vectors[axis_order[0]])  # 最長軸
-        V2 = vectors[axis_order[1]] / np.linalg.norm(vectors[axis_order[1]])  # 次長軸
-        V3 = vectors[axis_order[2]] / np.linalg.norm(vectors[axis_order[2]])  # 最短軸
+
+        # 動態分配軸
+        V1 = vectors[axis_order[0]] / np.linalg.norm(vectors[axis_order[0]])  # 最長軸作為 Y
+        V2 = vectors[axis_order[1]] / np.linalg.norm(vectors[axis_order[1]])  # 次長軸作為 X
+        V3 = vectors[axis_order[2]] / np.linalg.norm(vectors[axis_order[2]])  # 最短軸作為 Z
+
+        # 檢查 V3 方向並校正
+        points = np.array(polydata.GetPoints().GetData())
+        top_point = points[np.argmax(points[:, 2])]
+        direction_to_top = top_point - obb_center
+        if np.dot(direction_to_top, V3) < 0:
+            V3 = -V3
+
+        # 檢查 V2 方向並校正（新增）
+        left_point = points[np.argmax(points[:, 0])]  # 找到 Y 座標最大的點
+        direction_to_left = left_point - obb_center
+        if np.dot(direction_to_left, V2) < 0:  # 如果 V1 指向「左」
+            V2 = -V2
+
+        # 檢查 V1 方向並校正（新增）
+        right_point = points[np.argmax(points[:, 1])]  # 找到 Y 座標最大的點
+        direction_to_right = right_point - obb_center
+        if np.dot(direction_to_right, V1) < 0:  # 如果 V1 指向「左」
+            V1 = -V1
 
         # 目標標準基向量
         E1 = np.array([1, 0, 0])  # X 軸

@@ -84,7 +84,8 @@ def setup_camera_with_obb(renderer, render_window,upper_actor, center2=None, low
     cam_position = [0.0, 0.0, 0.0]
     polydata = lower_actor.GetMapper().GetInput()  # 取得模型資料
     up_polydata = upper_actor.GetMapper().GetInput()  # 取得模型資料
-
+    lower_bound = lower_actor.GetBounds()
+    lower_center=calculate_center(lower_actor)
     obb_bounds  = trianglegoodbbox.DentalModelReconstructor.compute_obb_aligned_bounds(polydata,up_polydata)  # 計算 OBB 邊界
     # writer = vtk.vtkPLYWriter()
     # writer.SetFileName("aligned_lower_model.ply")
