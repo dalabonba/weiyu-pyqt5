@@ -75,9 +75,9 @@ class DentalModelReconstructor:
             V3 = -V3
 
         # 檢查 V2 方向並校正（新增）
-        left_point = points[np.argmax(points[:, 0])]  # 找到 Y 座標最大的點
+        left_point = points[np.argmax(points[:, 0])]  # 找到 X 座標最大的點
         direction_to_left = left_point - obb_center
-        if np.dot(direction_to_left, V2) < 0:  # 如果 V1 指向「左」
+        if np.dot(direction_to_left, V2) < 0:  # 如果 V2 指向「右」
             V2 = -V2
 
         # 檢查 V1 方向並校正（新增）

@@ -1,7 +1,7 @@
 import vtk
 import os
 import math
-from . import trianglegoodbbox
+from . import trianglegoodobbox
 
 # 載入 3D 模型並根據檔案格式選擇對應的讀取器
 def load_3d_model(filename):
@@ -84,18 +84,7 @@ def setup_camera_with_obb(renderer, render_window,upper_actor, center2=None, low
     cam_position = [0.0, 0.0, 0.0]
     polydata = lower_actor.GetMapper().GetInput()  # 取得模型資料
     up_polydata = upper_actor.GetMapper().GetInput()  # 取得模型資料
-    lower_bound = lower_actor.GetBounds()
-    lower_center=calculate_center(lower_actor)
-    obb_bounds  = trianglegoodbbox.DentalModelReconstructor.compute_obb_aligned_bounds(polydata,up_polydata)  # 計算 OBB 邊界
-    # writer = vtk.vtkPLYWriter()
-    # writer.SetFileName("aligned_lower_model.ply")
-    # writer.SetInputData(polydata)
-    # writer.Write()
-
-    # if up_polydata is not None:
-    #     writer.SetFileName("aligned_upper_model.ply")
-    #     writer.SetInputData(up_polydata)
-    #     writer.Write()
+    obb_bounds  = trianglegoodobbox.DentalModelReconstructor.compute_obb_aligned_bounds(polydata,up_polydata)  # 計算 OBB 邊界
     center1 =  (
         (obb_bounds[0] + obb_bounds[1]) / 2.0,
         (obb_bounds[2] + obb_bounds[3]) / 2.0,
