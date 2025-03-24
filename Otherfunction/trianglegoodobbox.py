@@ -2,7 +2,6 @@
 
 from .plybb import  get_depth_from_gray_value
 
-from plyfile import PlyData
 import numpy as np
 from stl import mesh
 from PIL import Image
@@ -125,10 +124,10 @@ class DentalModelReconstructor:
         aligned_bounds = polydata.GetBounds()  # 返回 (xmin, xmax, ymin, ymax, zmin, zmax)
 
 
-        # 計算各軸方向長度
-        x_length = aligned_bounds[1] - aligned_bounds[0]
-        y_length = aligned_bounds[3] - aligned_bounds[2]
-        z_length = aligned_bounds[5] - aligned_bounds[4]
+        # # 計算各軸方向長度
+        # x_length = aligned_bounds[1] - aligned_bounds[0]
+        # y_length = aligned_bounds[3] - aligned_bounds[2]
+        # z_length = aligned_bounds[5] - aligned_bounds[4]
 
         # print(f"x_length: {x_length}, y_length: {y_length}, z_length: {z_length}")
 
@@ -150,12 +149,20 @@ class DentalModelReconstructor:
         vertices_list = []
         image = self.image
         width, height = image.size
-        ply_data = PlyData.read(self.ply_path)
+        min_x_value, max_x_value = width, 0
+        reader = vtk.vtkPLYReader()
+        reader.SetFileName(self.ply_path)
+        reader.Update()
 
-        # 讀取PLY頂點資料
-        vertices = np.vstack([ply_data['vertex']['x'],
-                            ply_data['vertex']['y'],
-                            ply_data['vertex']['z']]).T
+        # 確保 PolyData 不是空的
+        polydata = reader.GetOutput()
+        obb_bound=self.compute_obb_aligned_bounds(polydata)
+        # ply_data = PlyData.read(self.ply_path)
+
+        # # 讀取PLY頂點資料
+        # vertices = np.vstack([ply_data['vertex']['x'],
+        #                     ply_data['vertex']['y'],
+        #                     ply_data['vertex']['z']]).T
 
         # ======= 如果需要旋轉才進行以下步驟 ========
         if not occlusal_view:
@@ -174,26 +181,32 @@ class DentalModelReconstructor:
             vertices += centroid
 
         # ======= 計算點雲範圍 ========
-        min_x, max_x = np.min(vertices[:, 0]), np.max(vertices[:, 0])
-        min_y, max_y = np.min(vertices[:, 1]), np.max(vertices[:, 1])
-        min_z, max_z = np.min(vertices[:, 2]), np.max(vertices[:, 2])
-
+        min_x, max_x = obb_bound[0], obb_bound[1]
+        min_y, max_y = obb_bound[2], obb_bound[3]
+        min_z, max_z =  obb_bound[4], obb_bound[5]
         # 如果不是咬合面視角，壓縮Z軸
         if not occlusal_view:
             min_z = max_z - (max_z - min_z) * 0.5
 
         # ======= 生成點雲 ========
-        min_x_value, max_x_value = 255, 0
         max_value, min_value = 0, 255
-
-        for y in reversed(range(height)):
-            for x in reversed(range(width)):
+        width, height = image.size
+        for y in range(height):
+            for x in range(width):
+                pixel_value = image.getpixel((x, y))
+                max_value = max(max_value, pixel_value)
+                min_value = min(min_value, pixel_value)
+                if pixel_value != 0:
+                    min_x_value = min(min_x_value, x)
+                    max_x_value = max(max_x_value, x)
+        
+        for y in range(height-1, -1, -1):
+            for x in range(width-1, -1, -1):
                 gray_value = image.getpixel((x, y))
                 new_x = get_depth_from_gray_value(x, max_x_value, min_x_value, min_x, max_x)
                 new_y = get_depth_from_gray_value(height - y - 1, 255, 0, min_y, max_y)
                 new_z = get_depth_from_gray_value(gray_value, max_value, min_value, min_z, max_z)
                 vertices_list.append([new_x, new_y, new_z])
-
         return np.array(vertices_list)
     
 

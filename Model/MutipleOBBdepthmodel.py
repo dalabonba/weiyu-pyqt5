@@ -89,7 +89,7 @@ class OBBBatchDepthModel(BaseModel):
                     self.upper_actor.GetProperty().SetOpacity(self.upper_opacity)
                 
                 # 使用幫助函數設定基於 BB（有向邊界框）的相機
-                scale_filter = readmodel.setup_camera_with_obb(renderer, renderer.GetRenderWindow(),self.upper_actor,
+                scale_filter = readmodel.setup_camera_with_obb(renderer, renderer.GetRenderWindow(),
                                                             None, self.lower_actor, self.upper_opacity, self.angle)
                 
                 # 儲存深度圖像到輸出的路徑

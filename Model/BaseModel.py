@@ -1,6 +1,6 @@
 from PyQt5.QtCore import QObject
 import os
-from Otherfunction import readmodel, pictureedgblack, fillwhite  # 載入外部函式庫，用於讀取模型、處理圖片邊界與填充白色區域
+from Otherfunction import readmodel, pictureedgblack, fillwhite,trianglegoodobbox  # 載入外部函式庫，用於讀取模型、處理圖片邊界與填充白色區域
 
 class BaseModel(QObject):  # 繼承 QObject 以支援 Qt 訊號槽機制
     def __init__(self):

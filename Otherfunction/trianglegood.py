@@ -57,7 +57,6 @@ class DentalModelReconstructor:
                 new_y = get_depth_from_gray_value(height - y - 1, 255, 0, min_y, max_y)
                 new_z = get_depth_from_gray_value(gray_value, max_value, min_value, min_z, max_z)
                 vertices_list.append([new_x, new_y, new_z])
-        
         return np.array(vertices_list)
     
 
