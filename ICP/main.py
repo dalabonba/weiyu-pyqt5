@@ -28,4 +28,4 @@ def process_and_reconstruct(mesh_path1, mesh_path2, mesh_path3, output_dir="."):
     return output_filename1
 
 # 執行函式
-# process_and_reconstruct( "./0005/rebbox/redata0005bbox.stl","./0005/rebbox/redata0005bbox-90.stl","./0005/rebbox/redata0005bbox--90.stl")
+# process_and_reconstruct( "./0002/bbox/redata0006bbox.stl","./0002/bbox/redata0006bbox-90.stl","./0002/bbox/redata0006bbox--90.stl")

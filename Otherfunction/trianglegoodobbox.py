@@ -1,7 +1,4 @@
-
-
 from .plybb import  get_depth_from_gray_value
-
 import numpy as np
 from stl import mesh
 from PIL import Image

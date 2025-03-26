@@ -3,8 +3,8 @@ from PyQt5.QtWidgets import (QMainWindow, QVBoxLayout, QHBoxLayout, QPushButton,
 from vtkmodules.qt.QVTKRenderWindowInteractor import QVTKRenderWindowInteractor  # 引入 VTK 在 Qt 內嵌的窗口
 import vtkmodules.all as vtk  # 匯入所有 VTK 模組
 from . import (singledepthview, mutipledepthview, aipredictview,  # 匯入不同的視圖模組
-               edgeview, remeshview, stitchview, analysisview, icpview,aipredictobbview)
-from Model import Singledepthmodel, Mutipledepthmodel, Edgemodel, Aipredictmodel, Remeshmodel, Analysismodel, ICPmodel,MutipleOBBdepthmodel,Aipredictobbmodel  # 匯入不同的模型
+               edgeview, remeshview, stitchview, analysisview, icpview,aipredictobbview,stitchview)
+from Model import Singledepthmodel, Mutipledepthmodel, Edgemodel, Aipredictmodel, Remeshmodel, Analysismodel, ICPmodel,MutipleOBBdepthmodel,Aipredictobbmodel,Stitchmodel  # 匯入不同的模型
 
 class View(QMainWindow):  # 定義主視圖類別，繼承自 QMainWindow
     def __init__(self, parent=None):
@@ -161,7 +161,7 @@ class View(QMainWindow):  # 定義主視圖類別，繼承自 QMainWindow
         """創建未來縫合視圖面板"""
         self.clear_renderers()
         self.function_view = stitchview.StitchView(
-            self.buttonPanel, Mutipledepthmodel.BatchDepthModel(), self.vtk_renderer1, self.vtk_renderer2
+            self.buttonPanel, Stitchmodel.BatchDepthModel(), self.vtk_renderer1, self.vtk_renderer2
         )
         self.current_panel = self.function_view.create_depth(self.buttonPanel, self.current_panel)
 

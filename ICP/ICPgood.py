@@ -76,6 +76,7 @@ class MultiwayRegistration:
         mesh2.paint_uniform_color([0, 0.706, 1])
         mesh3.paint_uniform_color([0, 1, 0])
 
+
         # 轉換成點雲並取得頂點
         source = o3d.geometry.PointCloud()
         target = o3d.geometry.PointCloud()
@@ -99,6 +100,12 @@ class MultiwayRegistration:
         source.estimate_normals(search_param=search_param)
         target.estimate_normals(search_param=search_param)
         third.estimate_normals(search_param=search_param)
+
+        target.paint_uniform_color([0, 1, 0])  # 綠色
+        source.paint_uniform_color([1, 0, 0])  # 紅色
+        third.paint_uniform_color([0, 0, 1])   # 藍色
+
+        # o3d.visualization.draw_geometries([source, target, third])
 
         # 第一次配準 (source 與 target)
         pcds_down = self.load_point_clouds([source, target])
