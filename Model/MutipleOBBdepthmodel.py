@@ -109,9 +109,9 @@ class OBBBatchDepthModel(BaseModel):
                 
                 # 儲存深度圖像
                 readmodel.save_depth_image(output_file_path, scale_filter)
-            
+            # 如果只要打舌頰側的話
             else:
-                                # 使用幫助函數設定基於 BB（有向邊界框）的相機
+                # 使用幫助函數設定基於 BB（有向邊界框）的相機
                 scale_filter = readmodel.setup_camera_with_obb(renderer, renderer.GetRenderWindow(),None,
                                                             None, self.lower_actor, self.upper_opacity, self.angle)
 
