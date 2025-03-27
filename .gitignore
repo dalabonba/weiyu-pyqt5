@@ -11,9 +11,8 @@ DAIS0104goodbesidewgan/
 *.png
 *.zip
 *.7z
-r=2/
-r=2threepicture/
-dcprallcheck/
+aimodel/
+
 
 # Distribution / packaging
 .Python

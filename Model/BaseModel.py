@@ -75,7 +75,7 @@ class BaseModel(QObject):  # 繼承 QObject 以支援 Qt 訊號槽機制
                 renderer.AddActor(self.lower_actor)
 
         # # 若同時載入上、下顎模型，則計算模型中心點
-        if self.lower_actor is not None and self.upper_actor is not None:
+        if hasattr(self, 'lower_actor') and hasattr(self, 'upper_actor'):
             self.models_center = readmodel.twomodel_bound(
                 self.lower_actor.GetBounds(), 
                 self.upper_actor.GetBounds()

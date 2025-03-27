@@ -23,13 +23,15 @@ class DentalModelReconstructor:
         self.image = Image.fromarray(img_array)
         
     @staticmethod
-    def compute_obb_aligned_bounds(polydata, upper_polydata=None):
+    def compute_obb_aligned_bounds(polydata, upper_polydata=None, angle=None):
         """
-        計算 OBB 的邊界並對齊到世界坐標軸。
+        計算 OBB 的邊界並對齊到世界坐標軸，可選擇沿 Y 軸額外旋轉角度。
         
         參數:
-        polydata: vtkPolyData 對象，表示輸入的 3D 資料。
-
+        polydata: vtkPolyData 對象，表示輸入的 3D 資料
+        upper_polydata: 可選的第二個 vtkPolyData 對象
+        angle: 可選的旋轉角度（度），預設為 None
+        
         返回:
         aligned_bounds: 對齊後的邊界框
         """
@@ -117,6 +119,26 @@ class DentalModelReconstructor:
             new_upper_points.SetData(np_to_vtk(aligned_upper_points))
             upper_polydata.SetPoints(new_upper_points)
 
+        if angle ==90 or angle ==-90:
+            # 計算旋轉矩陣（沿 Y 軸旋轉）
+            aligned_points = np.array(polydata.GetPoints().GetData())
+            aligned_center = np.mean(aligned_points, axis=0)
+            theta = np.radians(angle)
+            cos_theta = np.cos(theta)
+            sin_theta = np.sin(theta)
+            rotation_y = np.array([
+                [cos_theta, 0, sin_theta],
+                [0, 1, 0],
+                [-sin_theta, 0, cos_theta]
+            ])
+            points = np.array(polydata.GetPoints().GetData())
+            points = points - aligned_center
+            rotated_points = (rotation_y @ points.T).T
+            rotated_points = rotated_points + aligned_center
+            new_points = vtk.vtkPoints()
+            new_points.SetData(np_to_vtk(rotated_points))
+            polydata.SetPoints(new_points)
+
         # (3) 可選：計算對齊後的 AABB
         aligned_bounds = polydata.GetBounds()  # 返回 (xmin, xmax, ymin, ymax, zmin, zmax)
 
@@ -154,13 +176,6 @@ class DentalModelReconstructor:
         # 確保 PolyData 不是空的
         polydata = reader.GetOutput()
         obb_bound=self.compute_obb_aligned_bounds(polydata)
-        # ply_data = PlyData.read(self.ply_path)
-
-        # # 讀取PLY頂點資料
-        # vertices = np.vstack([ply_data['vertex']['x'],
-        #                     ply_data['vertex']['y'],
-        #                     ply_data['vertex']['z']]).T
-
         # ======= 如果需要旋轉才進行以下步驟 ========
         if not occlusal_view:
             # 計算質心並移動至原點
@@ -279,4 +294,30 @@ def np_to_vtk(np_array):
     for i, point in enumerate(np_array):
         vtk_array.SetTuple3(i, point[0], point[1], point[2])
     return vtk_array
+
+
+def smooth_stl( input_stl_path, output_stl_path, iterations=20, relaxation_factor=0.2):
+    """對 STL 進行平滑處理"""
+    reader = vtk.vtkSTLReader()
+    reader.SetFileName(input_stl_path)
+    
+    smoother = vtk.vtkSmoothPolyDataFilter()
+    smoother.SetInputConnection(reader.GetOutputPort())
+    smoother.SetNumberOfIterations(iterations)  # 設定平滑迭代次數
+    smoother.SetRelaxationFactor(relaxation_factor)  # 控制平滑強度
+    smoother.FeatureEdgeSmoothingOff()
+    smoother.BoundarySmoothingOn()
+    smoother.Update()
+
+    writer = vtk.vtkSTLWriter()
+    writer.SetFileName(output_stl_path)
+    writer.SetInputConnection(smoother.GetOutputPort())
+    writer.Write()
+
+# reconstructor =DentalModelReconstructor("D:/Users/user/Desktop/weiyundontdelete/GANdata/pyqt/Aiobboutput/re_ai_data0119.png","D:/Users/user/Desktop/weiyundontdelete/GANdata/pyqt/Testdata/Prep/data0119.ply","D:/Users/user/Desktop/weiyundontdelete/GANdata/pyqt/Aiobboutput/re_ai_data0119.stl")
+# reconstructor.reconstruct()
+# smoothed_stl_path = "./ai_data0119_smooth.stl"
+# smooth_stl("D:/Users/user/Desktop/weiyundontdelete/GANdata/pyqt/Aiobboutput/re_ai_data0119.stl", smoothed_stl_path)
+
+
 

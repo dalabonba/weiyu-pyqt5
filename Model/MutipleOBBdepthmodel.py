@@ -42,7 +42,7 @@ class OBBBatchDepthModel(BaseModel):
                     pass  # 如果沒有檔案，跳過
                 if self.lower_file:
                     self.render_model(renderer)  # 渲染模型
-                self.set_model_angle(self.angle)  # 設定模型角度
+                # self.set_model_angle(self.angle)  # 設定模型角度
                 output_file_path = self.save_depth_map(renderer)  # 儲存深度圖
                 readmodel.render_file_in_second_window(render2, output_file_path)  # 在第二視窗中渲染檔案
                 self.reset(renderer)  # 重設渲染器
@@ -61,7 +61,6 @@ class OBBBatchDepthModel(BaseModel):
                     self.render_model(renderer)  # 渲染下層模型
                 if self.upper_file:
                     self.render_model(renderer)  # 渲染上層模型
-                self.set_model_angle(self.angle)  # 設定模型角度
                 output_file_path = self.save_depth_map(renderer)  # 儲存深度圖
                 readmodel.render_file_in_second_window(render2, output_file_path)  # 在第二視窗中渲染檔案
                 self.reset(renderer)  # 重設渲染器
@@ -83,13 +82,12 @@ class OBBBatchDepthModel(BaseModel):
             output_file_path = self.output_folder + '/' + base_name + ".png"
             
             # 如果 upper_opacity 等於 0，處理上層物件的透明度並進行深度圖處理
-            if self.upper_opacity == 0:
-                if hasattr(self, 'upper_actor'):
-                    # 設定上層物件的透明度為指定值
-                    self.upper_actor.GetProperty().SetOpacity(self.upper_opacity)
+            if self.upper_opacity == 0 and  hasattr(self, 'upper_actor'):
+                # 設定上層物件的透明度為指定值
+                self.upper_actor.GetProperty().SetOpacity(self.upper_opacity)
                 
                 # 使用幫助函數設定基於 BB（有向邊界框）的相機
-                scale_filter = readmodel.setup_camera_with_obb(renderer, renderer.GetRenderWindow(),
+                scale_filter = readmodel.setup_camera_with_obb(renderer, renderer.GetRenderWindow(),self.upper_actor,
                                                             None, self.lower_actor, self.upper_opacity, self.angle)
                 
                 # 儲存深度圖像到輸出的路徑
@@ -111,6 +109,19 @@ class OBBBatchDepthModel(BaseModel):
                 
                 # 儲存深度圖像
                 readmodel.save_depth_image(output_file_path, scale_filter)
+            
+            else:
+                                # 使用幫助函數設定基於 BB（有向邊界框）的相機
+                scale_filter = readmodel.setup_camera_with_obb(renderer, renderer.GetRenderWindow(),None,
+                                                            None, self.lower_actor, self.upper_opacity, self.angle)
+
+                # 儲存深度圖像到輸出的路徑
+                readmodel.save_depth_image(output_file_path, scale_filter)
+                
+                # 獲取圖像邊界並進行處理，將邊界內的區域填充為白色
+                bound_image = pictureedgblack.get_image_bound(output_file_path)
+                fillwhite.process_image_pair(bound_image, output_file_path, output_file_path)
+
             
             # 還原渲染視窗大小為 768x768 像素
             renderer.GetRenderWindow().SetSize(768, 768)

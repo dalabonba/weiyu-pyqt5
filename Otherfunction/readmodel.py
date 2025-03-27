@@ -83,8 +83,12 @@ def setup_camera_with_obb(renderer, render_window,upper_actor, center2=None, low
     # 設置相機的初始位置與剪裁範圍
     cam_position = [0.0, 0.0, 0.0]
     polydata = lower_actor.GetMapper().GetInput()  # 取得模型資料
-    up_polydata = upper_actor.GetMapper().GetInput()  # 取得模型資料
-    obb_bounds  = trianglegoodobbox.DentalModelReconstructor.compute_obb_aligned_bounds(polydata,up_polydata)  # 計算 OBB 邊界
+    if  upper_actor is not None:
+        up_polydata = upper_actor.GetMapper().GetInput()  # 取得模型資料
+        obb_bounds  = trianglegoodobbox.DentalModelReconstructor.compute_obb_aligned_bounds(polydata,up_polydata)  # 計算 OBB 邊界
+    else:
+        obb_bounds  = trianglegoodobbox.DentalModelReconstructor.compute_obb_aligned_bounds(polydata,None,angle)  # 計算 OBB 邊界
+        
     center1 =  (
         (obb_bounds[0] + obb_bounds[1]) / 2.0,
         (obb_bounds[2] + obb_bounds[3]) / 2.0,
