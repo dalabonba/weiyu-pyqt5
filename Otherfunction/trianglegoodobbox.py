@@ -153,13 +153,12 @@ class DentalModelReconstructor:
         return aligned_bounds
 
             
-    def generate_point_cloud(self, occlusal_view=True, rotate_negative_90=False):
+    def generate_point_cloud(self, angle=0):
         """
-        生成點雲資料，可選擇是否進行旋轉。
+        生成點雲資料，根據角度選擇視角。
         
         參數:
-        - occlusal_view (bool): 是否使用咬合面視角，不旋轉。
-        - rotate_negative_90 (bool): 是否沿Y軸逆時針旋轉90度。
+        - angle (int): 旋轉角度，0 表示咬合面，90 表示舌側，-90 表示頰側。
 
         回傳:
         - np.array: 生成的點雲座標陣列
@@ -169,22 +168,28 @@ class DentalModelReconstructor:
         image = self.image
         width, height = image.size
         min_x_value, max_x_value = width, 0
+        
+        # 讀取 PLY 文件
         reader = vtk.vtkPLYReader()
         reader.SetFileName(self.ply_path)
         reader.Update()
-
-        # 確保 PolyData 不是空的
         polydata = reader.GetOutput()
-        obb_bound=self.compute_obb_aligned_bounds(polydata)
-        # ======= 如果需要旋轉才進行以下步驟 ========
-        if not occlusal_view:
+
+        # 提取頂點數據
+        points = polydata.GetPoints()
+        vertices = np.array([points.GetPoint(i) for i in range(points.GetNumberOfPoints())])
+
+        # 根據角度進行旋轉
+        if angle != 0:
             # 計算質心並移動至原點
             centroid = np.mean(vertices, axis=0)
             vertices -= centroid
 
-            # 定義旋轉矩陣
-            rotation_matrix = np.array([[0, 0, -1], [0, 1, 0], [1, 0, 0]]) if rotate_negative_90 else \
-                            np.array([[0, 0, 1], [0, 1, 0], [-1, 0, 0]])
+            # 定義旋轉矩陣（沿 Y 軸旋轉）
+            if angle == 90:  # 舌側
+                rotation_matrix = np.array([[0, 0, 1], [0, 1, 0], [-1, 0, 0]])  # 順時針 90 度
+            elif angle == -90:  # 頰側
+                rotation_matrix = np.array([[0, 0, -1], [0, 1, 0], [1, 0, 0]])  # 逆時針 90 度
 
             # 套用旋轉
             vertices = vertices @ rotation_matrix.T
@@ -192,17 +197,17 @@ class DentalModelReconstructor:
             # 將點雲移回原位置
             vertices += centroid
 
-        # ======= 計算點雲範圍 ========
-        min_x, max_x = obb_bound[0], obb_bound[1]
-        min_y, max_y = obb_bound[2], obb_bound[3]
-        min_z, max_z =  obb_bound[4], obb_bound[5]
-        # 如果不是咬合面視角，壓縮Z軸
-        if not occlusal_view:
+        # 從旋轉後的 vertices 計算邊界
+        min_x, max_x = np.min(vertices[:, 0]), np.max(vertices[:, 0])
+        min_y, max_y = np.min(vertices[:, 1]), np.max(vertices[:, 1])
+        min_z, max_z = np.min(vertices[:, 2]), np.max(vertices[:, 2])
+
+        # 如果不是咬合面視角，壓縮 Z 軸
+        if angle != 0:
             min_z = max_z - (max_z - min_z) * 0.5
 
-        # ======= 生成點雲 ========
+        # 生成點雲
         max_value, min_value = 0, 255
-        width, height = image.size
         for y in range(height):
             for x in range(width):
                 pixel_value = image.getpixel((x, y))
@@ -219,8 +224,8 @@ class DentalModelReconstructor:
                 new_y = get_depth_from_gray_value(height - y - 1, 255, 0, min_y, max_y)
                 new_z = get_depth_from_gray_value(gray_value, max_value, min_value, min_z, max_z)
                 vertices_list.append([new_x, new_y, new_z])
+        
         return np.array(vertices_list)
-    
 
         
     def generate_mesh(self, points):
@@ -280,10 +285,10 @@ class DentalModelReconstructor:
             
         mesh_data.save(self.stl_output_path)
         
-    def reconstruct(self):
+    def reconstruct(self,angle=0):
         """執行完整的重建過程"""
         self.preprocess_image()
-        points = self.generate_point_cloud(True,False)
+        points = self.generate_point_cloud(angle)
         self.generate_mesh(points)
 
 def np_to_vtk(np_array):

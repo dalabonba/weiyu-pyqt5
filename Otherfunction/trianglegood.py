@@ -25,13 +25,23 @@ class DentalModelReconstructor:
         # self.image = Image.fromarray(img_array)
         
         
-    def generate_point_cloud(self):
+    def generate_point_cloud(self, angle=0):
+        """
+        生成點雲資料，根據角度選擇視角。
+        
+        參數:
+        - angle (int): 旋轉角度，0 表示咬合面，90 表示舌側，-90 表示頰側。
+
+        回傳:
+        - np.array: 生成的點雲座標陣列
+        """
         vertices_list = []
         image = self.image
         width, height = image.size
         min_x_value, max_x_value = width, 0
         max_value, min_value = 0, 255
-        width, height = image.size
+
+        # 計算圖片中非零像素的 X 範圍
         for y in range(height):
             for x in range(width):
                 pixel_value = image.getpixel((x, y))
@@ -41,15 +51,40 @@ class DentalModelReconstructor:
                     min_x_value = min(min_x_value, x)
                     max_x_value = max(max_x_value, x)
 
+        # 讀取 PLY 文件並提取頂點
         ply_data = PlyData.read(self.ply_path)
         vertices = np.vstack([ply_data['vertex']['x'],
                             ply_data['vertex']['y'],
                             ply_data['vertex']['z']]).T
         
+        # 根據角度進行旋轉
+        if angle != 0:
+            # 計算質心並移動至原點
+            centroid = np.mean(vertices, axis=0)
+            vertices -= centroid
+
+            # 定義旋轉矩陣（沿 Y 軸旋轉）
+            if angle == 90:  # 舌側
+                rotation_matrix = np.array([[0, 0, 1], [0, 1, 0], [-1, 0, 0]])  # 順時針 90 度
+            elif angle == -90:  # 頰側
+                rotation_matrix = np.array([[0, 0, -1], [0, 1, 0], [1, 0, 0]])  # 逆時針 90 度
+
+            # 套用旋轉
+            vertices = vertices @ rotation_matrix.T
+
+            # 將點雲移回原位置
+            vertices += centroid
+
+        # 從旋轉後的 vertices 計算邊界
         min_x, max_x = np.min(vertices[:, 0]), np.max(vertices[:, 0])
         min_y, max_y = np.min(vertices[:, 1]), np.max(vertices[:, 1])
         min_z, max_z = np.min(vertices[:, 2]), np.max(vertices[:, 2])
-        
+
+        # 如果不是咬合面視角，壓縮 Z 軸
+        if angle != 0:
+            min_z = max_z - (max_z - min_z) * 0.5
+
+        # 生成點雲
         for y in range(height-1, -1, -1):
             for x in range(width-1, -1, -1):
                 gray_value = image.getpixel((x, y))
@@ -57,6 +92,7 @@ class DentalModelReconstructor:
                 new_y = get_depth_from_gray_value(height - y - 1, 255, 0, min_y, max_y)
                 new_z = get_depth_from_gray_value(gray_value, max_value, min_value, min_z, max_z)
                 vertices_list.append([new_x, new_y, new_z])
+        
         return np.array(vertices_list)
     
 
@@ -118,33 +154,10 @@ class DentalModelReconstructor:
             
         mesh_data.save(self.stl_output_path)
         
-    def reconstruct(self):
+    def reconstruct(self,angle=0):
         """執行完整的重建過程"""
         self.preprocess_image()
-        points = self.generate_point_cloud()
+        points = self.generate_point_cloud(angle)
         self.generate_mesh(points)
 
 
-# # Define file paths
-# image_path = './data0176.png'
-# ply_path = './data0176.ply'
-# stl_output_path = './data0176.stl'
-
-# image = Image.open(image_path).convert('L')
-# width, height = image.size
-# min_x_value, max_x_value = width, 0
-# max_value, min_value = 0, 255
-
-# for y in range(height):
-#     for x in range(width):
-#         pixel_value = image.getpixel((x, y))
-#         max_value = max(max_value, pixel_value)
-#         min_value = min(min_value, pixel_value)
-#         if pixel_value != 0:
-#             min_x_value = min(min_x_value, x)
-#             max_x_value = max(max_x_value, x)
-# # Create an instance of the DentalModelReconstructor
-# reconstructor = DentalModelReconstructor(image_path, ply_path, stl_output_path)
-
-# # Call the reconstruct method to process the image and generate the STL file
-# reconstructor.reconstruct()

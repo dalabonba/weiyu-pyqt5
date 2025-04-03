@@ -1,5 +1,5 @@
 # singledepthview.py
-from PyQt5.QtWidgets import QGroupBox, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton, QSlider
+from PyQt5.QtWidgets import QGroupBox, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton, QComboBox
 from PyQt5.QtCore import Qt
 from .baseview import BaseView  
 from Otherfunction import readmodel
@@ -17,7 +17,7 @@ class RemeshView(BaseView):
         if current_panel:
             parent_layout.removeWidget(current_panel)
 
-        # 創建帶標題的組框，標題為"基本的
+        # 創建帶標題的組框，標題為"3D重建"
         panel = QGroupBox("3D重建")
         layout = QVBoxLayout()  # 創建垂直佈局
 
@@ -44,8 +44,26 @@ class RemeshView(BaseView):
         # 輸出文件夾選擇
         self.output_layout = QHBoxLayout()
         self.output_folder = QLineEdit()  # 創建輸出文件夾輸入框
-        # 使用父類方法創建文件選擇佈局
         self.create_file_selection_layout(layout, "輸出文件夾:", self.output_folder, self.model.set_output_folder)
+
+        # 第一排：選擇模式 (BB 或 OBB)
+        mode_layout = QHBoxLayout()
+        mode_layout.addWidget(QLabel("模式選擇:"))  # 添加標籤
+        self.mode_combo = QComboBox()  # 創建下拉選單
+        self.mode_combo.addItems(["", "BB", "OBB"])  # 添加選項，"" 表示未選擇
+        self.mode_combo.currentTextChanged.connect(self.on_mode_changed)  # 綁定模式改變事件
+        mode_layout.addWidget(self.mode_combo)  # 添加下拉選單到佈局
+        layout.addLayout(mode_layout)  # 添加模式選擇佈局到主佈局
+
+        # 第二排：選擇面 (咬合面、舌側、頰側)
+        face_layout = QHBoxLayout()
+        face_layout.addWidget(QLabel("面選擇:"))  # 添加標籤
+        self.face_combo = QComboBox()  # 創建下拉選單
+        self.face_combo.addItems(["", "咬合面", "舌側", "頰側"])  # 添加選項，"" 表示未選擇
+        self.face_combo.setEnabled(False)  # 初始禁用
+        self.face_combo.currentTextChanged.connect(self.on_face_changed)  # 綁定面改變事件
+        face_layout.addWidget(self.face_combo)  # 添加下拉選單到佈局
+        layout.addLayout(face_layout)  # 添加面選擇佈局到主佈局
 
         # 創建並設置保存按鈕
         save_button = QPushButton("3D重建")
@@ -58,36 +76,53 @@ class RemeshView(BaseView):
 
     # 選擇下顎3D參考文件
     def choose_lower_file(self):
-        # 調用父類的 choose_file 方法選擇3D模型文件
         file_path = self.choose_file(self.lower_file, "3D Model Files (*.ply *.stl *.obj)")
-        if file_path:  # 如果選擇了文件
-            self.model.set_reference_file(file_path)  # 設置模型的參考文件
-        else:  # 如果取消選擇
-            self.model.reference_file = ""  # 清空參考文件路徑
-
-    # 保存3D重建結果
-    def save_remesh_file(self):
-        # 調用模型的保存方法並檢查結果
-        if self.model.save_remesh_file(self.render_input, self.render_input2):
-            print("Depth map saved successfully")  # 成功保存深度圖
+        if file_path:
+            self.model.set_reference_file(file_path)
         else:
-            print("Failed to save depth map")  # 保存失敗
+            self.model.reference_file = ""
 
     # 選擇2D圖檔
     def choose_image_file(self):
-        # 調用父類的 choose_image 方法選擇圖片文件
         file_path = self.choose_image(self.image_file)
-        if file_path:  # 如果選擇了文件
-            self.model.set_image_file(file_path)  # 設置模型的圖片文件
-        else:  # 如果取消選擇
-            self.model.image_file = ""  # 清空圖片文件路徑
+        if file_path:
+            self.model.set_image_file(file_path)
+        else:
+            self.model.image_file = ""
+
+    # 當模式改變時觸發
+    def on_mode_changed(self, mode):
+        if mode:  # 如果選擇了有效模式（非空）
+            self.model.set_mode(mode)  # 設置模型的模式
+            self.face_combo.setEnabled(True)  # 啟用面選擇下拉選單
+        else:
+            self.model.mode = None  # 清空模式
+            self.face_combo.setEnabled(False)  # 禁用面選擇下拉選單
+            self.face_combo.setCurrentText("")  # 重置面選擇
+
+    # 當面改變時觸發
+    def on_face_changed(self, face):
+        if face:  # 如果選擇了有效面（非空）
+            self.model.set_face(face)  # 設置模型的面
+        else:
+            self.model.face = None  # 清空面選擇
+
+    # 保存3D重建結果
+    def save_remesh_file(self):
+        if self.model.save_remesh_file(self.render_input, self.render_input2):
+            print("Depth map saved successfully")
+        else:
+            print("Failed to save depth map")
 
     # 更新視圖內容
     def update_view(self):
-        self.image_file.setText(self.model.image_file)  # 更新2D圖檔路徑顯示
-        self.lower_file.setText(self.model.reference_file)  # 更新3D參考文件路徑顯示
-        self.output_folder.setText(self.model.output_folder)  # 更新輸出文件夾路徑顯示
-        self.render_input.RemoveAllViewProps()  # 清除所有視圖中的演員（actors）
-        if self.model.image_file:  # 如果存在圖片文件
-            # 在第二窗口渲染圖片文件
+        self.image_file.setText(self.model.image_file)
+        self.lower_file.setText(self.model.reference_file)
+        self.output_folder.setText(self.model.output_folder)
+        self.render_input.RemoveAllViewProps()
+        if self.model.image_file:
             readmodel.render_file_in_second_window(self.render_input, self.model.image_file)
+        # 更新模式和面的顯示
+        self.mode_combo.setCurrentText(self.model.mode if self.model.mode else "")
+        self.face_combo.setCurrentText(self.model.face if self.model.face else "")
+        self.face_combo.setEnabled(bool(self.model.mode))  # 根據模式是否選擇啟用面選項
