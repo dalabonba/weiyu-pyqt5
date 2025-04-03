@@ -1,9 +1,10 @@
 from .plybb import   get_depth_from_gray_value
-from plyfile import PlyData
+# from plyfile import PlyData
 import numpy as np
 from stl import mesh
 from PIL import Image
-
+import vtk
+import os
 
 
 class DentalModelReconstructor:
@@ -51,11 +52,23 @@ class DentalModelReconstructor:
                     min_x_value = min(min_x_value, x)
                     max_x_value = max(max_x_value, x)
 
-        # 讀取 PLY 文件並提取頂點
-        ply_data = PlyData.read(self.ply_path)
-        vertices = np.vstack([ply_data['vertex']['x'],
-                            ply_data['vertex']['y'],
-                            ply_data['vertex']['z']]).T
+        # 根據文件擴展名選擇合適的讀取器
+        file_extension = os.path.splitext(self.ply_path)[1].lower()
+        if file_extension == '.ply':
+            reader = vtk.vtkPLYReader()
+        elif file_extension == '.stl':
+            reader = vtk.vtkSTLReader()
+        elif file_extension == '.obj':
+            reader = vtk.vtkOBJReader()
+        else:
+            raise ValueError(f"Unsupported file format: {file_extension}. Supported formats are .ply, .stl, .obj")
+
+        # 讀取文件並提取頂點
+        reader.SetFileName(self.ply_path)
+        reader.Update()
+        polydata = reader.GetOutput()
+        points = polydata.GetPoints()
+        vertices = np.array([points.GetPoint(i) for i in range(points.GetNumberOfPoints())])
         
         # 根據角度進行旋轉
         if angle != 0:

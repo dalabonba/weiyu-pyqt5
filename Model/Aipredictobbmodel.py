@@ -60,13 +60,13 @@ class AipredictOBBModel(BaseModel):
             self.upper_opacity = 0  # 隱藏上顎
             self.upper_actor.GetProperty().SetOpacity(self.upper_opacity)
             # 生成下顎的深度圖（使用OBB方法）
-            output_file_path_down = self.combine_three_depth_obb(renderer)
+            output_file_path_down = self.combine_three_depth_obb(renderer,base_name)
             self.upper_opacity = 1  # 顯示上顎
             self.lower_opacity = 0  # 隱藏下顎
             self.upper_actor.GetProperty().SetOpacity(self.upper_opacity)
             self.lower_actor.GetProperty().SetOpacity(self.lower_opacity)
             # 生成上顎的深度圖（使用OBB方法）
-            output_file_path_up = self.combine_three_depth_obb(renderer)
+            output_file_path_up = self.combine_three_depth_obb(renderer,base_name_up)
             # 標記邊界點（上顎用黃色，下顎用預設顏色）
             pictureedgblack.mark_boundary_points(output_file_path_up, self.output_folder + "/edgeUp", color=(255, 255, 0))
             pictureedgblack.mark_boundary_points(output_file_path_down, self.output_folder + "/edgeDown")
@@ -81,7 +81,7 @@ class AipredictOBBModel(BaseModel):
             predictthree_pic = self.output_folder + "/predict.png"  # 預測圖路徑
             # 合併三張圖片（上下顎深度圖與邊界圖）
             combineABC.merge_images(output_file_path_down, output_file_path_up, 
-                                    self.output_folder + "/combinetwoedge/" + base_name + ".png", 
+                                    self.output_folder + "/combinetwoedge/" + base_name + "down.png", 
                                     predictthree_pic)
             output_file_path_ai = self.output_folder + '/ai_' + base_name + ".png"  # AI生成圖路徑
             # 使用GAN模型生成AI深度圖
@@ -171,18 +171,17 @@ class AipredictOBBModel(BaseModel):
         print(f"已成功將當前場景模型保存為: {file_path}")
 
     # 使用OBB生成三視圖深度圖
-    def combine_three_depth_obb(self, renderer):
+    def combine_three_depth_obb(self, renderer,filename):
         renderer.GetRenderWindow().SetSize(256, 256)  # 設置渲染窗口大小為256x256
-        base_name = os.path.splitext(os.path.basename(self.upper_file))[0]  # 提取上顎文件的基本名稱
 
         if self.upper_opacity == 1:  # 如果上顎可見
-            output_file_path = f"{self.output_folder}/{base_name}.png"  # 上顎深度圖路徑
+            output_file_path = f"{self.output_folder}/{filename}.png"  # 上顎深度圖路徑
             self.upper_center = readmodel.calculate_center(self.upper_actor)  # 計算上顎中心
             # 使用OBB設置攝像機並返回縮放過濾器
             scale_filter = readmodel.setup_camera_with_obb(renderer, renderer.GetRenderWindow(), self.upper_actor,
                                                            self.upper_center, self.lower_actor, self.upper_opacity, self.angle)
         else:  # 如果下顎可見
-            output_file_path = f"{self.output_folder}/{base_name}down.png"  # 下顎深度圖路徑
+            output_file_path = f"{self.output_folder}/{filename}down.png"  # 下顎深度圖路徑
             # 使用OBB設置攝像機（無上顎中心）
             scale_filter = readmodel.setup_camera_with_obb(renderer, renderer.GetRenderWindow(), self.upper_actor,
                                                            None, self.lower_actor, self.upper_opacity, self.angle)

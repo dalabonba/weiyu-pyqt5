@@ -60,13 +60,13 @@ class AipredictModel(BaseModel):
             self.upper_opacity = 0  # 隱藏上顎
             self.upper_actor.GetProperty().SetOpacity(self.upper_opacity)
             # 生成下顎的深度圖
-            output_file_path_down = self.combine_three_depth(renderer)
+            output_file_path_down = self.combine_three_depth(renderer, base_name)
             self.upper_opacity = 1  # 顯示上顎
             self.lower_opacity = 0  # 隱藏下顎
             self.upper_actor.GetProperty().SetOpacity(self.upper_opacity)
             self.lower_actor.GetProperty().SetOpacity(self.lower_opacity)
             # 生成上顎的深度圖
-            output_file_path_up = self.combine_three_depth(renderer)
+            output_file_path_up = self.combine_three_depth(renderer, base_name_up)
             # 標記邊界點
             pictureedgblack.mark_boundary_points(output_file_path_up, self.output_folder + "/edgeUp", color=(255, 255, 0))
             pictureedgblack.mark_boundary_points(output_file_path_down, self.output_folder + "/edgeDown")
@@ -81,7 +81,7 @@ class AipredictModel(BaseModel):
             predictthree_pic = self.output_folder + "/predict.png"  # 預測圖路徑
             # 合併三張圖片
             combineABC.merge_images(output_file_path_down, output_file_path_up, 
-                                    self.output_folder + "/combinetwoedge/" + base_name + ".png", 
+                                    self.output_folder + "/combinetwoedge/" + base_name + "down.png", 
                                     predictthree_pic)
             output_file_path_ai = self.output_folder + '/ai_' + base_name + ".png"  # AI生成圖路徑
             # 使用GAN模型生成AI深度圖

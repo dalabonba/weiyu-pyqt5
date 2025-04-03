@@ -144,10 +144,8 @@ class BaseModel(QObject):  # 繼承 QObject 以支援 Qt 訊號槽機制
 
 
     # 儲存更多深度圖（處理上顎和下顎分開存檔）
-    def combine_three_depth(self, renderer):
+    def combine_three_depth(self, renderer, base_name):
         renderer.GetRenderWindow().SetSize(256, 256)
-        base_name = os.path.splitext(os.path.basename(self.upper_file))[0]
-
         if self.upper_opacity == 1:
             output_file_path = f"{self.output_folder}/{base_name}.png"
             self.upper_center = readmodel.calculate_center(self.upper_actor)

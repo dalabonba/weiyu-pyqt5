@@ -53,7 +53,7 @@ def combine_image(input_image_path, input2_image_path, output_folder, downimage,
     input2_image_path = ensure_png_extension(input2_image_path)  # 確保第二張圖像路徑有 .png 副檔名
     if not os.path.exists(output_folder):  # 檢查輸出資料夾是否存在
         os.makedirs(output_folder)  # 如果不存在則創建資料夾
-    output_image_path = os.path.join(output_folder, os.path.basename(input2_image_path))  # 設定輸出圖像的完整路徑
+    output_image_path = os.path.join(output_folder, os.path.basename(input_image_path))  # 設定輸出圖像的完整路徑
     img = Image.open(input_image_path).convert('RGB')  # 打開第一張圖像並轉換為 RGB 格式
     img1 = Image.open(input2_image_path).convert('RGB')  # 打開第二張圖像並轉換為 RGB 格式
     img_array = np.array(img)  # 將第一張圖像轉換為 NumPy 陣列

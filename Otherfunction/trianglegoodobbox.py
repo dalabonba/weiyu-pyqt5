@@ -3,6 +3,7 @@ import numpy as np
 from stl import mesh
 from PIL import Image
 import vtk
+import os
 
 
 class DentalModelReconstructor:
@@ -168,9 +169,16 @@ class DentalModelReconstructor:
         image = self.image
         width, height = image.size
         min_x_value, max_x_value = width, 0
-        
-        # 讀取 PLY 文件
-        reader = vtk.vtkPLYReader()
+        # 根據文件擴展名選擇合適的讀取器
+        file_extension = os.path.splitext(self.ply_path)[1].lower()
+        if file_extension == '.ply':
+            reader = vtk.vtkPLYReader()
+        elif file_extension == '.stl':
+            reader = vtk.vtkSTLReader()
+        elif file_extension == '.obj':
+            reader = vtk.vtkOBJReader()
+        else:
+            raise ValueError(f"Unsupported file format: {file_extension}. Supported formats are .ply, .stl, .obj")
         reader.SetFileName(self.ply_path)
         reader.Update()
         polydata = reader.GetOutput()
