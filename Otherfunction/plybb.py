@@ -23,15 +23,15 @@ def get_centroid(vertices):
     return np.mean(vertices, axis=0)
 
 
-def get_step_depth(gray_value, max_gray, min_gray, min_z, max_z, steps=3):
-    """
-    根據灰階值分段重建深度，適用於樓梯結構。
-    """
-    step_size = (max_gray - min_gray) / steps
-    depth_step = (max_z - min_z) / steps
-    # 將灰階分成多個深度階段
-    step_index = int((gray_value - min_gray) // step_size)
-    step_index = max(0, min(step_index, steps - 1))  # 防止超出範圍
-    return min_z + step_index * depth_step
+# def get_step_depth(gray_value, max_gray, min_gray, min_z, max_z, steps=3):
+#     """
+#     根據灰階值分段重建深度，適用於樓梯結構。
+#     """
+#     step_size = (max_gray - min_gray) / steps
+#     depth_step = (max_z - min_z) / steps
+#     # 將灰階分成多個深度階段
+#     step_index = int((gray_value - min_gray) // step_size)
+#     step_index = max(0, min(step_index, steps - 1))  # 防止超出範圍
+#     return min_z + step_index * depth_step
 
 
