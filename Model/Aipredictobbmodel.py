@@ -115,7 +115,7 @@ class AipredictOBBModel(BaseModel):
             self.smooth_stl(output_stl_path, smoothed_stl_path)  # 平滑處理STL模型
             readmodel.render_file_in_second_window(render2, smoothed_stl_path)  # 在第二窗口渲染平滑後模型
 
-        self.model_updated.emit()  # 發送信號通知模型已更新
+        # self.model_updated.emit()  # 發送信號通知模型已更新
         renderer.GetRenderWindow().SetSize(768, 768)  # 恢復渲染窗口大小為768x768
         return True
 

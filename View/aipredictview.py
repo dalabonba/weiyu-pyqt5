@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QGroupBox, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton
+from PyQt5.QtWidgets import QGroupBox, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton, QComboBox
 from .baseview import BaseView  
 from PyQt5.QtWidgets import QFileDialog
 import vtk
@@ -21,7 +21,11 @@ class AimodelView(BaseView):
         self.highlight_style = forvtkinteractor.HighlightInteractorStyle()
         self.interactor.SetInteractorStyle(self.highlight_style)
 
-    # 創建AI預測面板
+        # 新增模型選擇的下拉選單
+        self.model_selector = QComboBox()
+        self.model_selector.currentIndexChanged.connect(self.switch_model)
+
+    # 創建AIOBB預測面板
     def create_predict(self, parent_layout, current_panel):
         # 如果當前面板存在，則移除
         if current_panel:
@@ -31,6 +35,13 @@ class AimodelView(BaseView):
         panel = QGroupBox("AI預測")
         layout = QVBoxLayout()  # 創建垂直佈局
 
+        # 模型選擇器佈局
+        selector_layout = QHBoxLayout()
+        selector_label = QLabel("選擇操作模型:")
+        selector_layout.addWidget(selector_label)
+        selector_layout.addWidget(self.model_selector)
+        layout.addLayout(selector_layout)  # 添加模型選擇器佈局到主佈局
+
         # 創建下顎3D模型文件選擇器
         lower_layout, self.threeddown_file = self.create_file_selector(
             "下顎缺陷3D模型:", panel, "3D Model Files (*.ply *.stl *.obj)", "down"
@@ -39,8 +50,8 @@ class AimodelView(BaseView):
         upper_layout, self.threedupper_file = self.create_file_selector(
             "上顎3D模型:", panel, "3D Model Files (*.ply *.stl *.obj)", "up"
         )
-        layout.addLayout(lower_layout)  # 添加下顎佈局
-        layout.addLayout(upper_layout)  # 添加上顎佈局
+        layout.addLayout(lower_layout)  # 添加下顎佈局到主佈局
+        layout.addLayout(upper_layout)  # 添加上顎佈局到主佈局
 
         # 創建預訓練模型文件輸入框
         self.model_file = QLineEdit()
@@ -89,11 +100,32 @@ class AimodelView(BaseView):
         self.output_folder.setText(self.model.output_folder)  # 更新輸出文件夾路徑
         self.model.render_model(self.render_input)  # 渲染模型
         # 如果下顎文件存在，設置高亮數據
-        if self.model.lower_file != '':
-            self.highlight_style.SetPolyData(self.model.model2)
+        # 根據當前選擇更新 highlight_style 的 polydata
+        self.update_model_selector()
+        if self.model_selector.currentText() == "下顎" and self.model.lower_file != '':
+            self.highlight_style.SetPolyData(self.model.model2)  # 下顎模型
+        elif self.model_selector.currentText() == "上顎" and self.model.upper_file != '':
+            self.highlight_style.SetPolyData(self.model.model1)  # 上顎模型 (假設 model1 是上顎)
         self.render_input.ResetCamera()  # 重置攝像機
         self.render_input.GetRenderWindow().Render()  # 渲染窗口
 
+    def update_model_selector(self):
+            """動態更新模型選擇選單"""
+            self.model_selector.clear()
+            if self.model.lower_file != '':
+                self.model_selector.addItem("下顎")
+            if self.model.upper_file != '':
+                self.model_selector.addItem("上顎")
+            if self.model_selector.count() == 0:
+                self.model_selector.addItem("無模型")
+
+    def switch_model(self):
+            """當選擇模型改變時，更新 highlight_style 的 polydata"""
+            if self.model_selector.currentText() == "下顎" and self.model.lower_file != '':
+                self.highlight_style.SetPolyData(self.model.model2)
+            elif self.model_selector.currentText() == "上顎" and self.model.upper_file != '':
+                self.highlight_style.SetPolyData(self.model.model1)  # 假設 model1 是上顎模型
+            self.render_input.GetRenderWindow().Render()
     # 選擇文件並更新模型
     def choose_file(self, line_edit, file_filter, position_type):
         options = QFileDialog.Options()  # 文件對話框選項
