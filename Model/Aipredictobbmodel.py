@@ -91,8 +91,9 @@ class AipredictOBBModel(BaseModel):
             self.lower_opacity = 1  # 顯示下顎
             self.upper_actor.GetProperty().SetOpacity(self.upper_opacity)
             self.lower_actor.GetProperty().SetOpacity(self.lower_opacity)
+            self.SaveDownAsPLY( self.lower_file_modify)  # 保存當前渲染為PLY文件
             # 使用OBB重建器生成3D模型
-            reconstructor = trianglegoodobbox.DentalModelReconstructor(output_file_path_ai, self.lower_file, output_stl_path)
+            reconstructor = trianglegoodobbox.DentalModelReconstructor(output_file_path_ai, self.lower_file_modify, output_stl_path)
             reconstructor.reconstruct()
             smoothed_stl_path = self.output_folder + '/ai_' + base_name + "_smooth.stl"  # 平滑後STL路徑
             self.smooth_stl(output_stl_path, smoothed_stl_path)  # 平滑處理STL模型
@@ -107,7 +108,7 @@ class AipredictOBBModel(BaseModel):
             # 使用GAN模型生成AI深度圖
             singleimgcolor.apply_gan_model(self.model_folder, output_file_path, output_file_path_ai)
             output_stl_path = self.output_folder + '/ai_' + base_name + ".stl"  # STL文件路徑
-            self.SaveCurrentRenderWindowAsPLY(renderer, self.lower_file_modify)  # 保存當前渲染為PLY文件
+            self.SaveDownAsPLY(self.lower_file_modify)  # 保存當前渲染為PLY文件
             # 使用OBB重建器生成3D模型
             reconstructor = trianglegoodobbox.DentalModelReconstructor(output_file_path_ai, self.lower_file_modify, output_stl_path)
             reconstructor.reconstruct()
@@ -139,36 +140,15 @@ class AipredictOBBModel(BaseModel):
         writer.Write()
 
     # 將當前渲染窗口保存為PLY文件
-    def SaveCurrentRenderWindowAsPLY(self, renderer, file_path):
+    def SaveDownAsPLY(self, file_path):
         """
         將當前可見模型從渲染窗口保存為PLY文件。
         提取所有可見演員的PolyData並合併為單一文件。
         """
-        append_filter = vtk.vtkAppendPolyData()  # 用於合併多個PolyData
-        actor_count = 0
-
-        # 遍歷當前場景中的所有演員
-        for actor in renderer.GetActors():
-            mapper = actor.GetMapper()
-            polydata = mapper.GetInput()
-            if polydata:
-                clean_filter = vtk.vtkCleanPolyData()  # 清理數據，移除重複點
-                clean_filter.SetInputData(polydata)
-                clean_filter.Update()
-                append_filter.AddInputData(clean_filter.GetOutput())
-                actor_count += 1
-
-        if actor_count == 0:
-            print("沒有可保存的模型。")
-            return
-
-        # 合併並保存
-        append_filter.Update()
-        ply_writer = vtk.vtkPLYWriter()  # PLY文件寫入器
-        ply_writer.SetFileName(file_path)
-        ply_writer.SetInputData(append_filter.GetOutput())
-        ply_writer.Write()
-        print(f"已成功將當前場景模型保存為: {file_path}")
+        writer = vtk.vtkPLYWriter()
+        writer.SetInputData(self.model2)  # 使用最新的下顎網格
+        writer.SetFileName(file_path)
+        writer.Write()
 
     # 使用OBB生成三視圖深度圖
     def combine_three_depth_obb(self, renderer,filename):
