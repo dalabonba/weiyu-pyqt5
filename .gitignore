@@ -11,8 +11,10 @@ DAIS0104goodbesidewgan/
 *.png
 *.zip
 *.7z
-aimodel/
 
+aimodel/
+output/
+resources/
 
 # Distribution / packaging
 .Python
