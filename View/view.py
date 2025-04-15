@@ -38,7 +38,7 @@ class View(QMainWindow):  # 定義主視圖類別，繼承自 QMainWindow
             "predictobbButton": "AIOBB預測",
             "icpButton": "ICP模型對齊",
             "reconstructButton": "3D模型重建",
-            # "stitchButton": "3D縫合網格",
+            "stitchButton": "3D縫合網格",
             "analysisButton": "2D圖像遮罩區域分析",
         }
         
@@ -89,7 +89,7 @@ class View(QMainWindow):  # 定義主視圖類別，繼承自 QMainWindow
         self.predictobbButton.clicked.connect(lambda: self.create_predictobb_panel())
         self.icpButton.clicked.connect(lambda: self.create_icp_panel())
         self.reconstructButton.clicked.connect(lambda: self.create_reconstruct_panel())
-        # self.stitchButton.clicked.connect(lambda: self.create_stitch_panel())
+        self.stitchButton.clicked.connect(lambda: self.create_stitch_panel())
         self.analysisButton.clicked.connect(lambda: self.create_analysis_panel())
 
 
@@ -157,13 +157,13 @@ class View(QMainWindow):  # 定義主視圖類別，繼承自 QMainWindow
         )
         self.current_panel = self.function_view.create_remesh(self.buttonPanel, self.current_panel)
 
-    # def create_stitch_panel(self):
-    #     """創建未來縫合視圖面板"""
-    #     self.clear_renderers()
-    #     self.function_view = stitchview.StitchView(
-    #         self.buttonPanel, Stitchmodel.BatchDepthModel(), self.vtk_renderer1, self.vtk_renderer2
-    #     )
-    #     self.current_panel = self.function_view.create_depth(self.buttonPanel, self.current_panel)
+    def create_stitch_panel(self):
+        """創建未來分割+縫合視圖面板"""
+        self.clear_renderers()
+        self.function_view = stitchview.StitchView(
+            self.buttonPanel, Stitchmodel.StitchModel(), self.vtk_renderer1, self.vtk_renderer2
+        )
+        self.current_panel = self.function_view.create_stitch(self.buttonPanel, self.current_panel)
 
     def create_analysis_panel(self):
         """創建分析視圖面板"""
