@@ -54,8 +54,15 @@ class MeshProcessor:
         threshold = vtk.vtkThreshold()
         threshold.SetInputData(distance_data)
         threshold.SetThresholdFunction(vtk.vtkThreshold.THRESHOLD_BETWEEN)
-        threshold.SetLowerThreshold(0.22)
-        threshold.SetUpperThreshold(3.5)
+        if os.path.basename(self.defect_file_path) == 'data0075.ply':
+            threshold.SetLowerThreshold(0.22)
+            threshold.SetUpperThreshold(3.5)
+        elif os.path.basename(self.defect_file_path) == 'data0078.ply':
+            threshold.SetLowerThreshold(0.55)
+            threshold.SetUpperThreshold(4)
+        else:
+            threshold.SetLowerThreshold(0.22)  # 預設閾值
+            threshold.SetUpperThreshold(3.5)
         threshold.Update()
 
         geometry_filter = vtk.vtkGeometryFilter()
@@ -85,8 +92,16 @@ class MeshProcessor:
         threshold = vtk.vtkThreshold()
         threshold.SetInputData(distance_data)
         threshold.SetThresholdFunction(vtk.vtkThreshold.THRESHOLD_BETWEEN)
-        threshold.SetLowerThreshold(0.25)
-        threshold.SetUpperThreshold(3)
+        # 根據檔案名稱設定閾值
+        if os.path.basename(self.defect_file_path) == 'data0075.ply':
+            threshold.SetLowerThreshold(0.25)
+            threshold.SetUpperThreshold(3)
+        elif os.path.basename(self.defect_file_path) == 'data0078.ply':
+            threshold.SetLowerThreshold(0.5)
+            threshold.SetUpperThreshold(4)
+        else:
+            threshold.SetLowerThreshold(0.25)  # 預設閾值
+            threshold.SetUpperThreshold(3)
         threshold.Update()
 
         geometry_filter = vtk.vtkGeometryFilter()

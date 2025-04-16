@@ -48,10 +48,10 @@ class StitchModel(BaseModel):
         if self.prepare_file:
             self.prepare_model = readmodel.load_3d_model(self.prepare_file)  # 載入缺陷模型
             self.prepare_actor = readmodel.create_actor(self.prepare_model, (0.98, 0.98, 0.92))  # 設定淺色材質
-            self.prepare_actor.GetProperty().SetSpecular(0.5)  # 增加高光
-            self.prepare_actor.GetProperty().SetSpecularPower(20)  # 讓光澤更集中
-            self.prepare_actor.GetProperty().SetDiffuse(0.6)  # 光線柔和散射
-            self.prepare_actor.GetProperty().SetAmbient(0.3)  # 提高環境光影響
+            # self.prepare_actor.GetProperty().SetSpecular(0.5)  # 增加高光
+            # self.prepare_actor.GetProperty().SetSpecularPower(20)  # 讓光澤更集中
+            # self.prepare_actor.GetProperty().SetDiffuse(0.6)  # 光線柔和散射
+            # self.prepare_actor.GetProperty().SetAmbient(0.3)  # 提高環境光影響
             # 目前未實現透明度，若需要可添加 self.prepare_opacity 屬性
             renderer.AddActor(self.prepare_actor)
 
@@ -59,10 +59,10 @@ class StitchModel(BaseModel):
         if self.smooth_ai_file:
             self.smooth_ai_model = readmodel.load_3d_model(self.smooth_ai_file)  # 載入AIsmooth模型
             self.smooth_ai_actor = readmodel.create_actor(self.smooth_ai_model, (0.98, 0.98, 0.92))  # 設定淺色材質
-            self.smooth_ai_actor.GetProperty().SetSpecular(0.5)  # 增加高光
-            self.smooth_ai_actor.GetProperty().SetSpecularPower(20)  # 讓光澤更集中
-            self.smooth_ai_actor.GetProperty().SetDiffuse(0.6)  # 光線柔和散射
-            self.smooth_ai_actor.GetProperty().SetAmbient(0.3)  # 提高環境光影響
+            # self.smooth_ai_actor.GetProperty().SetSpecular(0.5)  # 增加高光
+            # self.smooth_ai_actor.GetProperty().SetSpecularPower(20)  # 讓光澤更集中
+            # self.smooth_ai_actor.GetProperty().SetDiffuse(0.6)  # 光線柔和散射
+            # self.smooth_ai_actor.GetProperty().SetAmbient(0.3)  # 提高環境光影響
             # 目前未實現透明度，若需要可添加 self.smooth_ai_opacity 屬性
             renderer.AddActor(self.smooth_ai_actor)
 
