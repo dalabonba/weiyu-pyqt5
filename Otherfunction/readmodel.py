@@ -83,23 +83,24 @@ def setup_camera_with_obb(renderer, render_window,upper_actor, center2=None, low
     # 設置相機的初始位置與剪裁範圍
     cam_position = [0.0, 0.0, 0.0]
     polydata = lower_actor.GetMapper().GetInput()  # 取得模型資料
-    if  upper_actor is not None:
+    if  upper_actor is not None: # (打上下顎)
         up_polydata = upper_actor.GetMapper().GetInput()  # 取得模型資料
-        obb_bounds  = trianglegoodobbox.DentalModelReconstructor.compute_obb_aligned_bounds(polydata,up_polydata)  # 計算 OBB 邊界
-    else:
-        obb_bounds  = trianglegoodobbox.DentalModelReconstructor.compute_obb_aligned_bounds(polydata,None,angle)  # 計算 OBB 邊界
-        
+        obb_bounds, _  = trianglegoodobbox.DentalModelReconstructor.compute_obb_aligned_bounds(polydata,up_polydata)  # 根據模型OBB將其自動轉正至世界座標，並返回上下顎 OBB 邊界
+    else: # (打舌頰側)
+        obb_bounds, _  = trianglegoodobbox.DentalModelReconstructor.compute_obb_aligned_bounds(polydata,None,angle)
+    
+    # 歐幾里得距離計算下顎模型的中心點
     center1 =  (
         (obb_bounds[0] + obb_bounds[1]) / 2.0,
         (obb_bounds[2] + obb_bounds[3]) / 2.0,
         (obb_bounds[4] + obb_bounds[5]) / 2.0,
     )
 
-    cam1.SetFocalPoint(center1)  # 設定焦點
+    cam1.SetFocalPoint(center1)  # 設定焦點為下顎模型的中心點
     cam1.SetParallelProjection(True)  # 啟用平行投影
     cam_position=cam1.GetPosition()
 
-    # 計算相機與模型中心的距離
+    # 計算相機與下顎模型中心的距離
     distance_cam_to_bb = math.sqrt(
         (cam_position[0] - center1[0])**2 +
         (cam_position[1] - center1[1])**2 +
@@ -110,7 +111,7 @@ def setup_camera_with_obb(renderer, render_window,upper_actor, center2=None, low
     near = distance_cam_to_bb - ((obb_bounds[5] -  obb_bounds[4]) * 0.5)
     far = distance_cam_to_bb + ((obb_bounds[5] -  obb_bounds[4]) * 0.5)
 
-    # 設定相機的平行比例
+    # 根據下顎模型寬度(Y軸厚度)，設定相機的平行比例，確保相機視野寬度適合模型
     cam1.SetParallelScale((obb_bounds[3] - obb_bounds[2]) * 0.5)
 
     # 根據角度或其他條件設置剪裁範圍
@@ -127,6 +128,100 @@ def setup_camera_with_obb(renderer, render_window,upper_actor, center2=None, low
         cam1.SetClippingRange(near - gap_and_down, far)
     else:
         cam1.SetClippingRange(near-2, far)
+
+    renderer.SetActiveCamera(cam1)  # 設定活動相機
+
+    # 創建 vtkWindowToImageFilter 獲取深度圖像
+    depth_image_filter = vtk.vtkWindowToImageFilter()
+    depth_image_filter.SetInput(render_window)
+    depth_image_filter.SetInputBufferTypeToZBuffer()  # 使用 Z 緩衝區
+
+    # 創建 vtkImageShiftScale 將深度值映射至 0-255 範圍
+    scale_filter = vtk.vtkImageShiftScale()
+    scale_filter.SetInputConnection(depth_image_filter.GetOutputPort())
+    scale_filter.SetOutputScalarTypeToUnsignedChar()
+    scale_filter.SetShift(-1)
+    scale_filter.SetScale(-255)
+
+    return scale_filter  # 返回深度圖像的縮放過濾器
+
+# 設定 OBB 邊界的相機進行深度圖像渲染，深度值使用上下顎整體映射。
+def setup_camera_with_obb_mapping(renderer, render_window, upper_actor, lower_actor=None, angle=0):
+    """
+    使用 OBB 邊界設置相機進行深度圖像渲染，深度值使用上下顎整體映射。
+
+    參數:
+        renderer: vtkRenderer 對象。
+        render_window: vtkRenderWindow 對象。
+        lower_actor: 可選，下顎的 actor。
+        angle: 可選，相機額外調整角度。
+
+    返回:
+        vtkImageShiftScale: 調整過的深度圖像。
+    """
+
+    cam1 = renderer.GetActiveCamera()  # 獲取當前的相機
+
+    # 設置相機的初始位置與剪裁範圍
+    cam_position = [0.0, 0.0, 0.0]
+    polydata = lower_actor.GetMapper().GetInput()  # 取得模型資料
+    if  upper_actor is not None: # (打上下顎)
+        up_polydata = upper_actor.GetMapper().GetInput()  # 取得模型資料
+        obb_bounds, obb_upper_bounds  = trianglegoodobbox.DentalModelReconstructor.compute_obb_aligned_bounds(polydata,up_polydata)  # 根據模型OBB將其自動轉正至世界座標，並返回上下顎 OBB 邊界
+    else: # (打舌頰側)
+        obb_bounds, obb_upper_bounds  = trianglegoodobbox.DentalModelReconstructor.compute_obb_aligned_bounds(polydata,None,angle)
+    
+    # 歐幾里得距離計算下顎模型的中心點
+    center =  (
+        (obb_bounds[0] + obb_bounds[1]) / 2.0,
+        (obb_bounds[2] + obb_bounds[3]) / 2.0,
+        (obb_bounds[4] + obb_bounds[5]) / 2.0,
+    )
+
+    # 歐幾里得距離計算上顎模型的中心點
+    upper_center = (
+        (obb_upper_bounds[0] + obb_upper_bounds[1]) / 2.0,
+        (obb_upper_bounds[2] + obb_upper_bounds[3]) / 2.0,
+        (obb_upper_bounds[4] + obb_upper_bounds[5]) / 2.0,
+    )
+
+    cam1.SetFocalPoint(center)  # 設定焦點為下顎模型的中心點
+    cam1.SetParallelProjection(True)  # 啟用平行投影
+    cam_position=cam1.GetPosition()
+
+    # 計算相機與下顎模型中心的距離
+    distance_cam_to_center = math.sqrt(
+        (cam_position[0] - center[0])**2 +
+        (cam_position[1] - center[1])**2 +
+        (cam_position[2] - center[2])**2
+    )
+
+    # 計算相機與上顎模型中心的距離
+    distance_cam_to_upper_center = math.sqrt(
+        (cam_position[0] - upper_center[0])**2 +
+        (cam_position[1] - upper_center[1])**2 +
+        (cam_position[2] - upper_center[2])**2
+    )
+
+    model_height = obb_bounds[5] - obb_bounds[4] # 計算下顎模型的高度(z軸厚度)
+    upper_model_height = obb_upper_bounds[5] - obb_upper_bounds[4] # 計算上顎模型的高度(z軸厚度)
+    
+    # 計算近平面與遠平面的範圍
+    # near 用上顎，far 用下顎
+    near = distance_cam_to_upper_center - (upper_model_height * 0.5)
+    far = distance_cam_to_center + (model_height * 0.5)
+
+    # 根據下顎模型寬度(Y軸厚度)，設定相機的平行比例，確保相機視野寬度適合模型
+    cam1.SetParallelScale((obb_bounds[3] - obb_bounds[2]) * 0.5)
+
+    # 根據角度或其他條件設置剪裁範圍
+    if angle != 0:
+        cam1.SetClippingRange(near, far - ((far - near) * 0.5))
+    else: # 打上下顎深度圖
+        # 已經用上顎計算 near, 下顎計算 far
+        cam1.SetClippingRange(near, far)
+        print(f"near: {near}, far: {far}")
+        print("=========================")
 
     renderer.SetActiveCamera(cam1)  # 設定活動相機
 
@@ -172,7 +267,7 @@ def setup_camera(renderer, render_window, center2=None, lower_actor=None, upper_
     # 根據角度或其他條件設置剪裁範圍
     if angle != 0:
         cam1.SetClippingRange(near, far - ((far - near) * 0.5))
-    elif upper_opacity != 0 and center2 is not None:
+    elif upper_opacity != 0 and center2 is not None: # 打上顎深度圖
         distance_cam_to_bb_up = math.sqrt(
             (cam_position[0] - center2[0])**2 +
             (cam_position[1] - center2[1])**2 +
@@ -181,7 +276,7 @@ def setup_camera(renderer, render_window, center2=None, lower_actor=None, upper_
         gap_and_down = distance_cam_to_bb - distance_cam_to_bb_up
 
         cam1.SetClippingRange(near - gap_and_down, far)
-    else:
+    else: # 打下顎深度圖
         cam1.SetClippingRange(near-2.0, far)
 
     renderer.SetActiveCamera(cam1)  # 設定活動相機

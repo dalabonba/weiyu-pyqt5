@@ -110,6 +110,7 @@ class DentalModelReconstructor:
         new_points.SetData(np_to_vtk(aligned_points))
         polydata.SetPoints(new_points)
 
+        aligned_upper_bounds = None
         # 如果提供了 upper_polydata，同步變換
         if upper_polydata is not None:
             upper_points = np.array(upper_polydata.GetPoints().GetData())
@@ -119,6 +120,7 @@ class DentalModelReconstructor:
             new_upper_points = vtk.vtkPoints()
             new_upper_points.SetData(np_to_vtk(aligned_upper_points))
             upper_polydata.SetPoints(new_upper_points)
+            aligned_upper_bounds = upper_polydata.GetBounds()
 
         if angle ==90 or angle ==-90:
             # 計算旋轉矩陣（沿 Y 軸旋轉）
@@ -151,7 +153,7 @@ class DentalModelReconstructor:
 
         # print(f"x_length: {x_length}, y_length: {y_length}, z_length: {z_length}")
 
-        return aligned_bounds
+        return aligned_bounds, aligned_upper_bounds
 
             
     def generate_point_cloud(self, angle=0):

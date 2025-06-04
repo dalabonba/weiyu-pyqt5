@@ -17,6 +17,7 @@ class OBBBatchDepthModel(BaseModel):
         self.lower_opacity = 1.0  # 下層模型的透明度，預設為1.0（完全不透明）
         self.upper_files = []  # 上層模型檔案列表
         self.lower_files = []  # 下層模型檔案列表
+        self.mapping_mode = False  # 是否使用上下顎整體映射模式，預設為 False 
 
     # 設定上層模型的透明度
     def set_upper_opacity(self, opacity):
@@ -27,6 +28,12 @@ class OBBBatchDepthModel(BaseModel):
     def set_lower_opacity(self, opacity):
         self.lower_opacity = opacity  # 設定下層透明度
         self.model_updated.emit()  # 發送模型更新信號
+
+    def set_mapping_mode(self, mapping_mode):
+        """
+        設定是否使用上下顎整體映射模式。
+        """
+        self.mapping_mode = mapping_mode
 
     # 儲存深度圖按鈕的處理邏輯
     def save_depth_map_button(self, renderer, render2):
@@ -80,15 +87,21 @@ class OBBBatchDepthModel(BaseModel):
             
             # 生成輸出的檔案路徑，將 output_folder 與基本名稱和 ".png" 副檔名結合
             output_file_path = self.output_folder + '/' + base_name + ".png"
-            
-            # 如果 upper_opacity 等於 0，處理上層物件的透明度並進行深度圖處理
+            print(f"Saving depth map to: {output_file_path}")  # 打印儲存路徑
+
+            # 如果 upper_opacity 等於 0，處理上層物件的透明度並進行深度圖處理(打下顎)
             if self.upper_opacity == 0 and  hasattr(self, 'upper_actor'):
                 # 設定上層物件的透明度為指定值
                 self.upper_actor.GetProperty().SetOpacity(self.upper_opacity)
                 
-                # 使用幫助函數設定基於 BB（有向邊界框）的相機
-                scale_filter = readmodel.setup_camera_with_obb(renderer, renderer.GetRenderWindow(),self.upper_actor,
-                                                            None, self.lower_actor, self.upper_opacity, self.angle)
+                if self.mapping_mode:
+                    # 如果 mapping_mode 為 True，則使用整體映射模式
+                    scale_filter = readmodel.setup_camera_with_obb_mapping(renderer, renderer.GetRenderWindow(),
+                                                                           self.upper_actor, self.lower_actor, self.angle)
+                else:
+                    # 使用幫助函數設定基於 OBB（有向邊界框）的相機
+                    scale_filter = readmodel.setup_camera_with_obb(renderer, renderer.GetRenderWindow(),self.upper_actor,
+                                                                None, self.lower_actor, self.upper_opacity, self.angle)
                 
                 # 儲存深度圖像到輸出的路徑
                 readmodel.save_depth_image(output_file_path, scale_filter)
@@ -97,14 +110,19 @@ class OBBBatchDepthModel(BaseModel):
                 bound_image = pictureedgblack.get_image_bound(output_file_path)
                 fillwhite.process_image_pair(bound_image, output_file_path, output_file_path)
             
-            # 如果 upper_opacity 等於 1，設定上下層物件的透明度並處理深度圖
+            # 如果 upper_opacity 等於 1，設定上下層物件的透明度並處理深度圖(打上顎)
             elif self.upper_opacity == 1:
                 # 設定上層和下層物件的透明度
                 self.upper_actor.GetProperty().SetOpacity(self.upper_opacity)
                 self.lower_actor.GetProperty().SetOpacity(self.lower_opacity)
                 
-                # 設定相機，這次使用 upper_center 並處理透明度和角度
-                scale_filter = readmodel.setup_camera_with_obb(renderer, renderer.GetRenderWindow(),self.upper_actor,
+                if self.mapping_mode:
+                    # 如果 mapping_mode 為 True，則使用整體映射模式
+                    scale_filter = readmodel.setup_camera_with_obb_mapping(renderer, renderer.GetRenderWindow(),
+                                                                           self.upper_actor, self.lower_actor, self.angle)
+                else:
+                    # 設定相機，這次使用 upper_center 並處理透明度和角度
+                    scale_filter = readmodel.setup_camera_with_obb(renderer, renderer.GetRenderWindow(),self.upper_actor,
                                                             self.upper_center, self.lower_actor, self.upper_opacity, self.angle)
                 
                 # 儲存深度圖像
