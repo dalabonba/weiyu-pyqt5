@@ -35,6 +35,7 @@ class DentalModelReconstructor:
         
         返回:
         aligned_bounds: 對齊後的邊界框
+        aligned_upper_bounds: 如果提供了 upper_polydata，則返回其對齊後的邊界框
         """
         # 檢查輸入資料是否有點
         if polydata.GetNumberOfPoints() == 0:
@@ -186,7 +187,7 @@ class DentalModelReconstructor:
         polydata = reader.GetOutput()
 
         # 計算 OBB 邊界並將polydata對齊到世界坐標軸
-        bounds = self.compute_obb_aligned_bounds(polydata)
+        bounds, _ = self.compute_obb_aligned_bounds(polydata)
 
         # 提取頂點數據
         points = polydata.GetPoints()

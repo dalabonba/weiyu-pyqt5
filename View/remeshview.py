@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import QGroupBox, QVBoxLayout, QHBoxLayout, QLabel, QLineEd
 from PyQt5.QtCore import Qt
 from .baseview import BaseView  
 from Otherfunction import readmodel
+import time
 
 class RemeshView(BaseView):
     # 初始化函數，設置視圖的基本屬性
@@ -109,8 +110,11 @@ class RemeshView(BaseView):
 
     # 保存3D重建結果
     def save_remesh_file(self):
+        start_time = time.time()
         if self.model.save_remesh_file(self.render_input, self.render_input2):
-            print("Depth map saved successfully")
+            end_time = time.time()
+            elapsed_time = end_time - start_time
+            print(f"Depth map saved successfully in {elapsed_time:.2f} seconds")
         else:
             print("Failed to save depth map")
 
