@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import QGroupBox, QVBoxLayout, QHBoxLayout, QLabel, QLineEdit, QPushButton, QSlider, QCheckBox
 from PyQt5.QtCore import Qt
 from .baseview import BaseView
+import time
 
 
 class MutipleDepthView(BaseView): 
@@ -69,7 +70,6 @@ class MutipleDepthView(BaseView):
         layout.addLayout(angle_layout)
 
         # 上下顎整體映射核取方塊：勾選時表示將上顎和下顎模型使用相同深度映射範圍
-
         if "OBB" in model_class_name:
             self.mapping_checkbox = QCheckBox("上下顎整體映射")
             layout.addWidget(self.mapping_checkbox)
@@ -147,8 +147,11 @@ class MutipleDepthView(BaseView):
         if "OBB" in model_class_name:
             mapping_mode = self.mapping_checkbox.isChecked()  # 檢查是否勾選整體映射模式
             self.model.set_mapping_mode(mapping_mode)  # 更新 model 的深度映射模式
-            
+        
+        start_time = time.time()
         if self.model.save_depth_map_button(self.render_input, self.render_input2):
-            print("Depth map saved successfully")  # 成功儲存
+            end_time = time.time()
+            elapsed_time = end_time - start_time
+            print(f"Depth map saved successfully in {elapsed_time:.2f} seconds")  # 成功儲存
         else:
             print("Failed to save depth map")  # 失敗
